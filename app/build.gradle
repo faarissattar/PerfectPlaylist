@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.example.faari.perfectplaylsit"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -27,4 +27,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     api project(':spotify-app-remote')
     implementation "com.google.code.gson:gson:2.6.1"
+
+    implementation 'hound.android:hound-sdk:1.4.0'
 }

@@ -1,24 +1,82 @@
 package com.example.faari.perfectplaylsit;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.hound.android.fd.DefaultRequestInfoFactory;
+import com.hound.android.fd.HoundSearchResult;
+import com.hound.android.fd.Houndify;
+import com.hound.android.fd.UserIdFactory;
+import com.hound.android.sdk.VoiceSearch;
+import com.hound.android.sdk.VoiceSearchInfo;
+import com.hound.android.sdk.audio.SimpleAudioByteStreamSource;
+import com.hound.android.sdk.util.HoundRequestInfoFactory;
+import com.hound.core.model.sdk.HoundRequestInfo;
+import com.hound.core.model.sdk.HoundResponse;
+import com.hound.core.model.sdk.PartialTranscript;
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String CLIENT_ID = "ffe427ae0c784377ab9f5afc7bf47a15";
     private static final String REDIRECT_URI = "https://example.com/redirect/";
+    final static int REQUEST_CODE = 100;
     private SpotifyAppRemote mSpotifyAppRemote;
+    private VoiceSearch voiceSearch;
+
+    private void buildVoiceSearch() {
+
+        voiceSearch = new VoiceSearch.Builder()
+                .setRequestInfo(buildRequestInfo())
+                .setClientId("n06WnSgzJbML7AuGNJou3Q==")
+                .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
+                .setListener(voiceListener)
+                .setAudioSource(new SimpleAudioByteStreamSource())
+                .build();
+    }
+
+    private HoundRequestInfo buildRequestInfo() {
+        final HoundRequestInfo requestInfo = HoundRequestInfoFactory.getDefault(this);
+        requestInfo.setUserId(UserIdFactory.get(this));
+        requestInfo.setRequestId(UUID.randomUUID().toString());
+        return requestInfo;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE) {
+            final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
+            final HoundResponse houndResponse = result.getResponse();
+        }
+    }
+
 
     @Override   //  question over needing to explicitly create an overriden function
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        final Houndify houndify = Houndify.get(this);
+        houndify.setClientId("n06WnSgzJbML7AuGNJou3Q==");
+        houndify.setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==");
+        houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
+
+
+
+        Houndify.get(this).voiceSearch(this, REQUEST_CODE);
     }
+
 
 
     @Override
@@ -60,4 +118,64 @@ public class MainActivity extends AppCompatActivity {
 
         SpotifyAppRemote.CONNECTOR.disconnect(mSpotifyAppRemote);
     }
+
+    //------------------------------------------------------------------------------------------------------------
+    private class Listener implements VoiceSearch.RawResponseListener {
+
+        @Override
+        public void onTranscriptionUpdate(final PartialTranscript transcript) {
+            switch (voiceSearch.getState()) {
+                case STATE_STARTED:
+                    statusTextView.setText("Listening...");
+                    break;
+
+                case STATE_SEARCHING:
+                    statusTextView.setText("Receiving...");
+                    break;
+
+                default:
+                    statusTextView.setText("Unknown");
+                    break;
+            }
+
+            contentTextView.setText("Transcription:\n" + transcript.getPartialTranscript());
+        }
+
+        @Override
+        public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
+            voiceSearch = null;
+
+            statusTextView.setText("Received Response");
+
+            String jsonString;
+            try {
+                jsonString = new JSONObject(rawResponse).toString(4);
+            } catch (final JSONException ex) {
+                jsonString = "Failed to parse content:\n" + rawResponse;
+            }
+
+            contentTextView.setText(jsonString);
+            btnSearch.setText("Search");
+        }
+
+        @Override
+        public void onError(final Exception ex, final VoiceSearchInfo info) {
+            voiceSearch = null;
+
+            statusTextView.setText("Something went wrong");
+            contentTextView.setText(exceptionToString(ex));
+        }
+
+        @Override
+        public void onRecordingStopped() {
+            statusTextView.setText("Receiving...");
+        }
+
+        @Override
+        public void onAbort(final VoiceSearchInfo info) {
+            voiceSearch = null;
+            statusTextView.setText("Aborted");
+        }
+    };
+
 }
