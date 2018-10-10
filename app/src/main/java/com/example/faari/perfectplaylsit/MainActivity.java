@@ -1,11 +1,11 @@
 package com.example.faari.perfectplaylsit;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
 import com.hound.android.fd.HoundSearchResult;
@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private VoiceSearch voiceSearch;
 
     private void buildVoiceSearch() {
+        //  new listener class created to handle status of recording, getting json string and handling aborting
+        Listener voiceListener = new Listener();
 
         voiceSearch = new VoiceSearch.Builder()
                 .setRequestInfo(buildRequestInfo())
@@ -78,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     protected void onStart(){
         //  super calls the onStart function of the superType for this class
@@ -109,7 +110,22 @@ public class MainActivity extends AppCompatActivity {
 
     private void connected(){
         mSpotifyAppRemote.getPlayerApi().play("spotify:user:spotify:playlist:37i9dQZF1DX2sUQwD7tbmL");
+    }
 
+    public void pauseMusic(View view){
+        mSpotifyAppRemote.getPlayerApi().pause();
+    }
+
+    public void skipMusic(View view){
+        mSpotifyAppRemote.getPlayerApi().skipNext();
+    }
+
+    public void playbackMusic(View view){
+        mSpotifyAppRemote.getPlayerApi().skipPrevious();
+    }
+
+    public void startVoiceSearch(View view){
+        buildVoiceSearch();
     }
 
     @Override
@@ -124,6 +140,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onTranscriptionUpdate(final PartialTranscript transcript) {
+            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
+            TextView contentTextView = (TextView) findViewById(R.id.contentTextView);
             switch (voiceSearch.getState()) {
                 case STATE_STARTED:
                     statusTextView.setText("Listening...");
@@ -143,6 +161,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
+            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
+            TextView contentTextView = (TextView) findViewById(R.id.contentTextView);
+            TextView btnSearch = (TextView) findViewById(R.id.btnSearch);
             voiceSearch = null;
 
             statusTextView.setText("Received Response");
@@ -160,22 +181,25 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onError(final Exception ex, final VoiceSearchInfo info) {
+            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
+            TextView contentTextView = (TextView) findViewById(R.id.contentTextView);
             voiceSearch = null;
 
             statusTextView.setText("Something went wrong");
-            contentTextView.setText(exceptionToString(ex));
+            contentTextView.setText(ex.toString());
         }
 
         @Override
         public void onRecordingStopped() {
+            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
             statusTextView.setText("Receiving...");
         }
 
         @Override
         public void onAbort(final VoiceSearchInfo info) {
+            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
             voiceSearch = null;
             statusTextView.setText("Aborted");
         }
     };
-
 }
