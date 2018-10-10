@@ -10,7 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class ListViewRecent extends ArrayAdapter<String> {
+public class RecentSongsAdapter extends ArrayAdapter<String> {
 
     private final Activity context;
     private final String[] title;
@@ -18,7 +18,7 @@ public class ListViewRecent extends ArrayAdapter<String> {
     private final String[] album;
     private final Integer[] imgid;
 
-    public ListViewRecent(Activity context, String[] title,String[] artist, String[] album, Integer[] imgid) {
+    public RecentSongsAdapter(Activity context, String[] title, String[] artist, String[] album, Integer[] imgid) {
         super(context, R.layout.list_view_recent, title);
 
         this.context=context;
