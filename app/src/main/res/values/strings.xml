@@ -1,4 +1,11 @@
 <resources>
+    <string name="app_name">PerfectPlaylsit</string>
+    <string name="button_replay">replay</string>
+    <string name="button_pause">pause</string>
+    <string name="button_skip">skip</string>
+    <string name="voice_status">status</string>
+    <string name="voice_content">content</string>
+    <string name="search_button">search</string>
     <string name="app_name">PerfectPlaylist</string>
     <string name="content_description_album_cover">album cover</string>
     <string name="content_description_heart">heart</string>
