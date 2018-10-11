@@ -5,4 +5,6 @@
     <string name="placeholder_artist">Artist</string>
     <string name="placeholder_album">Album</string>
     <string name="placeholder_song">Song</string>
+    <string name="content_description_button_microphone">This is a button in the shape of a microphone</string>
+    <string name="content_description_microphone_button">microphone</string>
 </resources>

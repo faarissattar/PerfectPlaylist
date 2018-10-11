@@ -14,6 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="175dp"
         android:layout_marginTop="32dp"
+        android:contentDescription="@string/content_description_microphone_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
