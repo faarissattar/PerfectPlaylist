@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
@@ -140,8 +141,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onTranscriptionUpdate(final PartialTranscript transcript) {
-            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
-            TextView contentTextView = (TextView) findViewById(R.id.contentTextView);
+            TextView statusTextView = findViewById(R.id.statusTextView);
+            TextView contentTextView = findViewById(R.id.contentTextView);
             switch (voiceSearch.getState()) {
                 case STATE_STARTED:
                     statusTextView.setText("Listening...");
@@ -161,9 +162,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
-            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
-            TextView contentTextView = (TextView) findViewById(R.id.contentTextView);
-            TextView btnSearch = (TextView) findViewById(R.id.btnSearch);
+            TextView statusTextView = findViewById(R.id.statusTextView);
+            TextView contentTextView = findViewById(R.id.contentTextView);
+            ImageView btnSearch = findViewById(R.id.btnSearch);
+            btnSearch.setClickable(true);
             voiceSearch = null;
 
             statusTextView.setText("Received Response");
@@ -176,13 +178,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             contentTextView.setText(jsonString);
-            btnSearch.setText("Search");
+            //btnSearch.setText("Search");
         }
 
         @Override
         public void onError(final Exception ex, final VoiceSearchInfo info) {
-            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
-            TextView contentTextView = (TextView) findViewById(R.id.contentTextView);
+            TextView statusTextView = findViewById(R.id.statusTextView);
+            TextView contentTextView = findViewById(R.id.contentTextView);
             voiceSearch = null;
 
             statusTextView.setText("Something went wrong");
@@ -191,15 +193,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onRecordingStopped() {
-            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
+            TextView statusTextView = findViewById(R.id.statusTextView);
             statusTextView.setText("Receiving...");
         }
 
         @Override
         public void onAbort(final VoiceSearchInfo info) {
-            TextView statusTextView = (TextView) findViewById(R.id.statusTextView);
+            TextView statusTextView = findViewById(R.id.statusTextView);
             voiceSearch = null;
             statusTextView.setText("Aborted");
         }
-    };
+    }
 }
