@@ -22,18 +22,20 @@
         app:srcCompat="@drawable/button_microphone" />
 
     <TextView
+        android:id="@+id/statusTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/statusTextView"
-        app:layout_constraintTop_toBottomOf="@id/btnSearch"
-        app:layout_constraintBottom_toTopOf="@id/contentTextView"/>
+        android:text="Status"
+        app:layout_constraintBottom_toTopOf="@id/contentTextView"
+        app:layout_constraintTop_toBottomOf="@id/btnSearch" />
 
     <TextView
+        android:id="@+id/contentTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/contentTextView"
-        app:layout_constraintTop_toBottomOf="@id/contentTextView"
-        app:layout_constraintBottom_toTopOf="@id/lv_recents"/>
+        android:text="Content"
+        app:layout_constraintBottom_toTopOf="@id/lv_recents"
+        app:layout_constraintTop_toBottomOf="@id/contentTextView" />
 
     <ListView
         android:id="@+id/lv_recents"
