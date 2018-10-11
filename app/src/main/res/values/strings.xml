@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">PerfectPlaylsit</string>
+    <string name="app_name">PerfectPlaylist</string>
+    <string name="content_description_album_cover">album cover</string>
+    <string name="content_description_heart">heart</string>
+    <string name="placeholder_artist">Artist</string>
+    <string name="placeholder_album">Album</string>
+    <string name="placeholder_song">Song</string>
 </resources>

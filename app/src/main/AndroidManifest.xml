@@ -27,7 +27,8 @@
                     android:scheme="http" />
             </intent-filter>
         </activity>
-        <activity android:name=".PlaylistActivity"></activity>
+        <activity android:name=".PlaylistActivity" />
+        <activity android:name=".RecentSongsAdapter"></activity>
     </application>
 
 </manifest>
