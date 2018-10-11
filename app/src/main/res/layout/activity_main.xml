@@ -10,7 +10,7 @@
 
 
     <ImageView
-        android:id="@+id/iv_microphone"
+        android:id="@+id/btnSearch"
         android:layout_width="wrap_content"
         android:layout_height="175dp"
         android:layout_marginTop="32dp"
@@ -21,6 +21,20 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/button_microphone" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/statusTextView"
+        app:layout_constraintTop_toBottomOf="@id/btnSearch"
+        app:layout_constraintBottom_toTopOf="@id/contentTextView"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/contentTextView"
+        app:layout_constraintTop_toBottomOf="@id/contentTextView"
+        app:layout_constraintBottom_toTopOf="@id/lv_recents"/>
+
     <ListView
         android:id="@+id/lv_recents"
         android:layout_width="0dp"
@@ -30,7 +44,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iv_microphone" />
+        app:layout_constraintTop_toBottomOf="@+id/statusTextView" />
 
     <include
         android:id="@+id/include"
