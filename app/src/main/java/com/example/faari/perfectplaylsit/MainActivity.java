@@ -1,7 +1,9 @@
 package com.example.faari.perfectplaylsit;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -32,54 +34,31 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String CLIENT_ID = "ffe427ae0c784377ab9f5afc7bf47a15";
     private static final String REDIRECT_URI = "https://example.com/redirect/";
-    final static int REQUEST_CODE = 100;
+    final static int REQUEST_CODE = 5744;
+    private TextView statusTextView;
+    private TextView contentTextView;
+    private ImageView btnSearch;
     private SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch voiceSearch;
-
-    private void buildVoiceSearch() {
-        //  new listener class created to handle status of recording, getting json string and handling aborting
-        Listener voiceListener = new Listener();
-
-        voiceSearch = new VoiceSearch.Builder()
-                .setRequestInfo(buildRequestInfo())
-                .setClientId("n06WnSgzJbML7AuGNJou3Q==")
-                .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
-                .setListener(voiceListener)
-                .setAudioSource(new SimpleAudioByteStreamSource())
-                .build();
-    }
-
-    private HoundRequestInfo buildRequestInfo() {
-        final HoundRequestInfo requestInfo = HoundRequestInfoFactory.getDefault(this);
-        requestInfo.setUserId(UserIdFactory.get(this));
-        requestInfo.setRequestId(UUID.randomUUID().toString());
-        return requestInfo;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE) {
-            final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
-            final HoundResponse houndResponse = result.getResponse();
-        }
-    }
-
 
     @Override   //  question over needing to explicitly create an overriden function
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        statusTextView = findViewById(R.id.statusTextView);
+        contentTextView = findViewById(R.id.contentTextView);
+        btnSearch = findViewById(R.id.btnSearch);
+
+        ActivityCompat.requestPermissions(this, new String[] {
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        }, 0);
 
         final Houndify houndify = Houndify.get(this);
         houndify.setClientId("n06WnSgzJbML7AuGNJou3Q==");
         houndify.setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
-
-
-
-        Houndify.get(this).voiceSearch(this, REQUEST_CODE);
     }
-
 
     @Override
     protected void onStart(){
@@ -87,9 +66,9 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
-                                                                .setRedirectUri(REDIRECT_URI)
-                                                                .showAuthView(true)
-                                                                .build();
+                .setRedirectUri(REDIRECT_URI)
+                .showAuthView(true)
+                .build();
 
         SpotifyAppRemote.CONNECTOR.connect(this, connectionParams, new Connector.ConnectionListener() {
             @Override
@@ -109,6 +88,38 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE) {
+            final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
+            final HoundResponse houndResponse = result.getResponse();
+        }
+    }
+
+    private void buildVoiceSearch() {
+        if (voiceSearch != null) {
+            return; // We are already searching
+        }
+
+        voiceSearch = new VoiceSearch.Builder()
+                .setRequestInfo(buildRequestInfo())
+                .setClientId("n06WnSgzJbML7AuGNJou3Q==")
+                .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
+                .setListener(voiceListener)
+                .setAudioSource(new SimpleAudioByteStreamSource())
+                .build();
+
+        //Houndify.get(this).voiceSearch(this, REQUEST_CODE);
+        voiceSearch.start();
+    }
+
+    private HoundRequestInfo buildRequestInfo() {
+        final HoundRequestInfo requestInfo = HoundRequestInfoFactory.getDefault(this);
+        requestInfo.setUserId(UserIdFactory.get(this));
+        requestInfo.setRequestId(UUID.randomUUID().toString());
+        return requestInfo;
+    }
+
     private void connected(){
         mSpotifyAppRemote.getPlayerApi().play("spotify:user:spotify:playlist:37i9dQZF1DX2sUQwD7tbmL");
     }
@@ -126,7 +137,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startVoiceSearch(View view){
-        buildVoiceSearch();
+        if (voiceSearch == null) {
+            buildVoiceSearch();
+        }
+        else {
+            voiceSearch.stopRecording();
+        }
     }
 
     @Override
@@ -136,13 +152,13 @@ public class MainActivity extends AppCompatActivity {
         SpotifyAppRemote.CONNECTOR.disconnect(mSpotifyAppRemote);
     }
 
+    private final Listener voiceListener = new Listener();
+
     //------------------------------------------------------------------------------------------------------------
     private class Listener implements VoiceSearch.RawResponseListener {
 
         @Override
         public void onTranscriptionUpdate(final PartialTranscript transcript) {
-            TextView statusTextView = findViewById(R.id.statusTextView);
-            TextView contentTextView = findViewById(R.id.contentTextView);
             switch (voiceSearch.getState()) {
                 case STATE_STARTED:
                     statusTextView.setText("Listening...");
@@ -162,9 +178,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
-            TextView statusTextView = findViewById(R.id.statusTextView);
-            TextView contentTextView = findViewById(R.id.contentTextView);
-            ImageView btnSearch = findViewById(R.id.btnSearch);
             btnSearch.setClickable(true);
             voiceSearch = null;
 
@@ -183,8 +196,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onError(final Exception ex, final VoiceSearchInfo info) {
-            TextView statusTextView = findViewById(R.id.statusTextView);
-            TextView contentTextView = findViewById(R.id.contentTextView);
             voiceSearch = null;
 
             statusTextView.setText("Something went wrong");
@@ -193,13 +204,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onRecordingStopped() {
-            TextView statusTextView = findViewById(R.id.statusTextView);
             statusTextView.setText("Receiving...");
         }
 
         @Override
         public void onAbort(final VoiceSearchInfo info) {
-            TextView statusTextView = findViewById(R.id.statusTextView);
             voiceSearch = null;
             statusTextView.setText("Aborted");
         }
