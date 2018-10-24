@@ -8,37 +8,35 @@
     tools:context="com.example.faari.perfectplaylsit.MainActivity"
     tools:layout_editor_absoluteY="81dp">
 
+    <!--<FrameLayout
+        android:id="@+id/scene_1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/btnSearch"
-        android:layout_width="286dp"
-        android:layout_height="146dp"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/content_description_microphone_button"
-        android:onClick="startVoiceSearch"
+        <include
+            android:id="@+id/buttonSearch"
+            layout="@layout/animation_scene_1" />
+    </FrameLayout>-->
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_microphone"
+        android:layout_width="@android:dimen/notification_large_icon_width"
+        android:layout_height="@android:dimen/notification_large_icon_height"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/button_microphone" />
 
     <ListView
         android:id="@+id/lv_recents"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/include"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSearch" />
-
-    <include
-        android:id="@+id/include"
-        layout="@layout/media_bar"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

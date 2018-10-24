@@ -5,10 +5,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.AutoTransition;
+import android.transition.Scene;
+import android.transition.Transition;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.support.design.widget.FloatingActionButton;
+import android.widget.Toast;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
 import com.hound.android.fd.HoundSearchResult;
@@ -40,16 +48,18 @@ public class MainActivity extends AppCompatActivity {
     private ImageView btnSearch;
     private SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch voiceSearch;
+    private FloatingActionButton buttonSearch;
+    private Scene scene1, scene2;
+    private ViewGroup sceneRoot;
+    private Transition autoTransition = new AutoTransition();
 
-    @Override   //  question over needing to explicitly create an overriden function
+    @Override   //  question over needing to explicitly create an overridden function
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        statusTextView = findViewById(R.id.statusTextView);
-        contentTextView = findViewById(R.id.contentTextView);
-        btnSearch = findViewById(R.id.btnSearch);
+        buttonSearch = (FloatingActionButton) findViewById(R.id.fab_microphone);
 
-        ActivityCompat.requestPermissions(this, new String[] {
+        ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
         }, 0);
@@ -58,7 +68,18 @@ public class MainActivity extends AppCompatActivity {
         houndify.setClientId("n06WnSgzJbML7AuGNJou3Q==");
         houndify.setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
+
+        buttonSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
+                Toast.makeText(MainActivity.this, "This button was pressed.", Toast.LENGTH_LONG).show();
+            }
+        });
+
     }
+
+
 
     @Override
     protected void onStart(){
