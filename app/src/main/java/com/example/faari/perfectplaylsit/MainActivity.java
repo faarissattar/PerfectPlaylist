@@ -3,19 +3,17 @@ package com.example.faari.perfectplaylsit;
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.transition.AutoTransition;
 import android.transition.Scene;
 import android.transition.Transition;
-import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.support.design.widget.FloatingActionButton;
 import android.widget.Toast;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
@@ -78,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-
 
 
     @Override
