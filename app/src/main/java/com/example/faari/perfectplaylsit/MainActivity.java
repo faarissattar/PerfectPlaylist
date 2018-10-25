@@ -213,8 +213,6 @@ public class MainActivity extends AppCompatActivity {
             statusTextView.setText("Received Response");
 
 
-
-            contentTextView.setText(Ids);
             //btnSearch.setText("Search");
         }
 
