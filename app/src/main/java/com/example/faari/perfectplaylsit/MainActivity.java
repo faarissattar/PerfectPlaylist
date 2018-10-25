@@ -1,7 +1,10 @@
 package com.example.faari.perfectplaylsit;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -44,10 +47,23 @@ public class MainActivity extends AppCompatActivity {
     @Override   //  question over needing to explicitly create an overriden function
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_test);
         statusTextView = findViewById(R.id.statusTextView);
         contentTextView = findViewById(R.id.contentTextView);
         btnSearch = findViewById(R.id.btnSearch);
+
+        if (isFirstTime()) {
+            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+            alertDialog.setTitle("Alert");
+            alertDialog.setMessage("To run this app correctly, spotify must be installed on this device.");
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            alertDialog.show();
+        }
 
         ActivityCompat.requestPermissions(this, new String[] {
                 Manifest.permission.RECORD_AUDIO,
@@ -58,6 +74,19 @@ public class MainActivity extends AppCompatActivity {
         houndify.setClientId("n06WnSgzJbML7AuGNJou3Q==");
         houndify.setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
+    }
+
+    private boolean isFirstTime()
+    {
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        boolean ranBefore = preferences.getBoolean("RanBefore", false);
+        if (!ranBefore) {
+            // first time
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean("RanBefore", true);
+            editor.commit();
+        }
+        return !ranBefore;
     }
 
     @Override
@@ -173,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
 
-            contentTextView.setText("Transcription:\n" + transcript.getPartialTranscript());
+            contentTextView.setText("\t\tTranscription:\n" + transcript.getPartialTranscript());
         }
 
         @Override
@@ -183,14 +212,9 @@ public class MainActivity extends AppCompatActivity {
 
             statusTextView.setText("Received Response");
 
-            String jsonString;
-            try {
-                jsonString = new JSONObject(rawResponse).toString(4);
-            } catch (final JSONException ex) {
-                jsonString = "Failed to parse content:\n" + rawResponse;
-            }
 
-            contentTextView.setText(jsonString);
+
+            contentTextView.setText(Ids);
             //btnSearch.setText("Search");
         }
 

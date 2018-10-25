@@ -16,10 +16,10 @@
         android:contentDescription="@string/content_description_microphone_button"
         android:onClick="startVoiceSearch"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/button_microphone" />
+
 
     <TextView
         android:id="@+id/statusTextView"
@@ -36,23 +36,28 @@
 
     <TextView
         android:id="@+id/contentTextView"
-        android:layout_width="95dp"
-        android:layout_height="142dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginRight="4dp"
-        app:layout_constraintEnd_toStartOf="@+id/btnSearch"
-        app:layout_constraintTop_toBottomOf="@id/contentTextView" />
+        android:layout_width="234dp"
+        android:layout_height="31dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="72dp"
+        android:layout_marginRight="72dp"
+        android:includeFontPadding="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnSearch" />
 
     <ListView
         android:id="@+id/lv_recents"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toTopOf="@+id/include"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/statusTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/contentTextView" />
 
     <include
         android:id="@+id/include"
