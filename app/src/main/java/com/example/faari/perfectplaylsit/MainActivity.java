@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
 import com.hound.android.fd.HoundSearchResult;
@@ -28,6 +29,7 @@ import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         if (isFirstTime()) {
             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
             alertDialog.setTitle("Alert");
-            alertDialog.setMessage("To run this app correctly, spotify must be installed on this device.");
+            alertDialog.setMessage("To run this app correctly, Spotify must be installed on this device.");
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
@@ -212,8 +214,19 @@ public class MainActivity extends AppCompatActivity {
 
             statusTextView.setText("Received Response");
 
+            String jsonString;
+            try{
+                jsonString = new JSONObject(rawResponse).toString(4);
+                JSONObject jsonObj = new JSONObject(jsonString);
+                JSONArray results = jsonObj.getJSONArray("AllResults");
+                JSONObject resultsText = results.getJSONObject(0);
+                jsonString = resultsText.getString("WrittenResponse");
+            } catch (JSONException ex){
+                jsonString = "failed";
+            }
 
             //btnSearch.setText("Search");
+            Toast.makeText(getApplicationContext(), jsonString, Toast.LENGTH_LONG).show();
         }
 
         @Override
