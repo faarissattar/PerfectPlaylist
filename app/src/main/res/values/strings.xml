@@ -13,4 +13,5 @@
     <string name="placeholder_song">Song</string>
     <string name="content_description_button_microphone">This is a button in the shape of a microphone</string>
     <string name="content_description_microphone_button">microphone</string>
+    <string name="instructions_question">What do you want to hear today?</string>
 </resources>

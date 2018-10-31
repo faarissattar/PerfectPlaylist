@@ -1,15 +1,17 @@
 package com.example.faari.perfectplaylsit;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.AutoTransition;
+import android.transition.Scene;
+import android.transition.Transition;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,7 +31,6 @@ import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,29 +46,18 @@ public class MainActivity extends AppCompatActivity {
     private ImageView btnSearch;
     private SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch voiceSearch;
+    private FloatingActionButton buttonSearch;
+    private Scene scene1, scene2;
+    private ViewGroup sceneRoot;
+    private Transition autoTransition = new AutoTransition();
 
-    @Override   //  question over needing to explicitly create an overriden function
+    @Override   //  question over needing to explicitly create an overridden function
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_test);
-        statusTextView = findViewById(R.id.statusTextView);
-        contentTextView = findViewById(R.id.contentTextView);
-        btnSearch = findViewById(R.id.btnSearch);
+        setContentView(R.layout.activity_main);
+        buttonSearch = (FloatingActionButton) findViewById(R.id.fab_microphone);
 
-        if (isFirstTime()) {
-            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-            alertDialog.setTitle("Alert");
-            alertDialog.setMessage("To run this app correctly, Spotify must be installed on this device.");
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-            alertDialog.show();
-        }
-
-        ActivityCompat.requestPermissions(this, new String[] {
+        ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
         }, 0);
@@ -76,20 +66,17 @@ public class MainActivity extends AppCompatActivity {
         houndify.setClientId("n06WnSgzJbML7AuGNJou3Q==");
         houndify.setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
+
+        buttonSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
+                Toast.makeText(MainActivity.this, "This button was pressed.", Toast.LENGTH_LONG).show();
+            }
+        });
+
     }
 
-    private boolean isFirstTime()
-    {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        boolean ranBefore = preferences.getBoolean("RanBefore", false);
-        if (!ranBefore) {
-            // first time
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putBoolean("RanBefore", true);
-            editor.commit();
-        }
-        return !ranBefore;
-    }
 
     @Override
     protected void onStart(){
@@ -204,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
 
-            contentTextView.setText("\t\tTranscription:\n" + transcript.getPartialTranscript());
+            contentTextView.setText("Transcription:\n" + transcript.getPartialTranscript());
         }
 
         @Override
@@ -215,18 +202,14 @@ public class MainActivity extends AppCompatActivity {
             statusTextView.setText("Received Response");
 
             String jsonString;
-            try{
+            try {
                 jsonString = new JSONObject(rawResponse).toString(4);
-                JSONObject jsonObj = new JSONObject(jsonString);
-                JSONArray results = jsonObj.getJSONArray("AllResults");
-                JSONObject resultsText = results.getJSONObject(0);
-                jsonString = resultsText.getString("WrittenResponse");
-            } catch (JSONException ex){
-                jsonString = "failed";
+            } catch (final JSONException ex) {
+                jsonString = "Failed to parse content:\n" + rawResponse;
             }
 
+            contentTextView.setText(jsonString);
             //btnSearch.setText("Search");
-            Toast.makeText(getApplicationContext(), jsonString, Toast.LENGTH_LONG).show();
         }
 
         @Override
