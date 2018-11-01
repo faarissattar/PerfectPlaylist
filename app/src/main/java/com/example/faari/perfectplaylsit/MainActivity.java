@@ -10,15 +10,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.transition.AutoTransition;
-import android.transition.Scene;
-import android.transition.Transition;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
@@ -46,26 +41,21 @@ public class MainActivity extends AppCompatActivity {
     private static final String CLIENT_ID = "ffe427ae0c784377ab9f5afc7bf47a15";
     private static final String REDIRECT_URI = "https://example.com/redirect/";
     final static int REQUEST_CODE = 5744;
-    private TextView statusTextView;
-    private TextView contentTextView;
-    private ImageView btnSearch;
-    private Button button;
+    //private TextView statusTextView;
+    //private TextView contentTextView;
+    //private ImageView btnSearch;
+    //private Button button;
     private SpotifyAppRemote mSpotifyAppRemote;
-    private VoiceSearch voiceSearch;
-    private FloatingActionButton buttonSearch;
-    private Scene scene1, scene2;
-    private ViewGroup sceneRoot;
-    private Transition autoTransition = new AutoTransition();
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-    private ViewPager mViewPager;
+    private VoiceSearch mvoiceSearch;
+    private FloatingActionButton mbuttonSearch;
 
     @Override   //  question over needing to explicitly create an overridden function
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        buttonSearch = (FloatingActionButton) findViewById(R.id.fab_microphone);
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mbuttonSearch = (FloatingActionButton) findViewById(R.id.fab_microphone);
+        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         ActivityCompat.requestPermissions(this, new String[]{
@@ -78,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         houndify.setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
 
-        buttonSearch.setOnClickListener(new View.OnClickListener() {
+        mbuttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
@@ -112,15 +102,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+            View recentView = inflater.inflate(R.layout.fragment_recent, container, false);
+            View playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
-                textView.setText("Recent Commands");
+                return recentView;
             } else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
-                textView.setText("Your Perfect Playlist");
+                return playlistView;
             }
-            //This is where you change the listViewAdapter for the different lists because there is only one listView
-            return rootView;
+            return recentView;
         }
     }
 
@@ -162,11 +151,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void buildVoiceSearch() {
-        if (voiceSearch != null) {
+        if (mvoiceSearch != null) {
             return; // We are already searching
         }
 
-        voiceSearch = new VoiceSearch.Builder()
+        mvoiceSearch = new VoiceSearch.Builder()
                 .setRequestInfo(buildRequestInfo())
                 .setClientId("n06WnSgzJbML7AuGNJou3Q==")
                 .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
@@ -174,8 +163,8 @@ public class MainActivity extends AppCompatActivity {
                 .setAudioSource(new SimpleAudioByteStreamSource())
                 .build();
 
-        //Houndify.get(this).voiceSearch(this, REQUEST_CODE);
-        voiceSearch.start();
+        //Houndify.get(this).mvoiceSearch(this, REQUEST_CODE);
+        mvoiceSearch.start();
     }
 
     private HoundRequestInfo buildRequestInfo() {
@@ -202,11 +191,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startVoiceSearch(View view){
-        if (voiceSearch == null) {
+        if (mvoiceSearch == null) {
             buildVoiceSearch();
         }
         else {
-            voiceSearch.stopRecording();
+            mvoiceSearch.stopRecording();
         }
     }
 
@@ -224,29 +213,29 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onTranscriptionUpdate(final PartialTranscript transcript) {
-            switch (voiceSearch.getState()) {
+            switch (mvoiceSearch.getState()) {
                 case STATE_STARTED:
-                    statusTextView.setText("Listening...");
+                    //statusTextView.setText("Listening...");
                     break;
 
                 case STATE_SEARCHING:
-                    statusTextView.setText("Receiving...");
+                    //statusTextView.setText("Receiving...");
                     break;
 
                 default:
-                    statusTextView.setText("Unknown");
+                    //statusTextView.setText("Unknown");
                     break;
             }
 
-            contentTextView.setText("Transcription:\n" + transcript.getPartialTranscript());
+            //contentTextView.setText("Transcription:\n" + transcript.getPartialTranscript());
         }
 
         @Override
         public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
-            btnSearch.setClickable(true);
-            voiceSearch = null;
+            mbuttonSearch.setClickable(true);
+            mvoiceSearch = null;
 
-            statusTextView.setText("Received Response");
+            //statusTextView.setText("Received Response");
 
             String jsonString;
             try {
@@ -255,27 +244,27 @@ public class MainActivity extends AppCompatActivity {
                 jsonString = "Failed to parse content:\n" + rawResponse;
             }
 
-            contentTextView.setText(jsonString);
+            //contentTextView.setText(jsonString);
             //btnSearch.setText("Search");
         }
 
         @Override
         public void onError(final Exception ex, final VoiceSearchInfo info) {
-            voiceSearch = null;
+            mvoiceSearch = null;
 
-            statusTextView.setText("Something went wrong");
-            contentTextView.setText(ex.toString());
+            //statusTextView.setText("Something went wrong");
+            //contentTextView.setText(ex.toString());
         }
 
         @Override
         public void onRecordingStopped() {
-            statusTextView.setText("Receiving...");
+            //statusTextView.setText("Receiving...");
         }
 
         @Override
         public void onAbort(final VoiceSearchInfo info) {
-            voiceSearch = null;
-            statusTextView.setText("Aborted");
+            mvoiceSearch = null;
+            //statusTextView.setText("Aborted");
         }
     }
 
