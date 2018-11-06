@@ -33,6 +33,9 @@ dependencies {
     api project(':spotify-app-remote')
     implementation 'com.google.code.gson:gson:2.6.1'
     implementation 'hound.android:hound-sdk:1.4.0'
+    def room_version = "1.1.1"
+    implementation "android.arch.persistence.room:runtime:$room_version"
+    annotationProcessor "android.arch.persistence.room:compiler:$room_version"
 }
 
 repositories {

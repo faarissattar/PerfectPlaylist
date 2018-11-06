@@ -14,10 +14,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
-import com.hound.android.fd.HoundSearchResult;
 import com.hound.android.fd.Houndify;
 import com.hound.android.fd.UserIdFactory;
 import com.hound.android.sdk.VoiceSearch;
@@ -25,7 +23,6 @@ import com.hound.android.sdk.VoiceSearchInfo;
 import com.hound.android.sdk.audio.SimpleAudioByteStreamSource;
 import com.hound.android.sdk.util.HoundRequestInfoFactory;
 import com.hound.core.model.sdk.HoundRequestInfo;
-import com.hound.core.model.sdk.HoundResponse;
 import com.hound.core.model.sdk.PartialTranscript;
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
@@ -48,15 +45,16 @@ public class MainActivity extends AppCompatActivity {
     private SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
+    ViewPager mviewPager;
 
     @Override   //  question over needing to explicitly create an overridden function
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mbuttonSearch = (FloatingActionButton) findViewById(R.id.fab_microphone);
+        mbuttonSearch = findViewById(R.id.fab_microphone);
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mviewPager = findViewById(R.id.container);
+        mviewPager.setAdapter(mSectionsPagerAdapter);
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
@@ -72,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
-
+                mviewPager.setCurrentItem(2);
             }
         });
     }
@@ -84,8 +82,7 @@ public class MainActivity extends AppCompatActivity {
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
 
-        public PlaceholderFragment() {
-        }
+        public PlaceholderFragment() {}
 
         /**
          * Returns a new instance of this fragment for the given section
@@ -144,10 +141,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE) {
-            final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
-            final HoundResponse houndResponse = result.getResponse();
-        }
+        //if (requestCode == REQUEST_CODE) {
+             //final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
+            //final HoundResponse houndResponse = result.getResponse();
+        //}
     }
 
     private void buildVoiceSearch() {
