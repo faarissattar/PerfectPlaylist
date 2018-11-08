@@ -1,8 +1,11 @@
 package com.example.faari.perfectplaylsit;
 
 import android.Manifest;
+import android.arch.persistence.room.Room;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -14,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
 import com.hound.android.fd.Houndify;
@@ -31,6 +35,7 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -45,16 +50,22 @@ public class MainActivity extends AppCompatActivity {
     private SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
+    private ListView mlistViewPlaylist;
     ViewPager mviewPager;
+    SectionsPagerAdapter msectionsPagerAdapter;
 
     @Override   //  question over needing to explicitly create an overridden function
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SongDatabase songDB = Room.databaseBuilder(getApplicationContext(),
+                SongDatabase.class, "song").build();
+        CommandDatabase commandDB = Room.databaseBuilder(getApplicationContext(),
+                CommandDatabase.class, "command").build();
         mbuttonSearch = findViewById(R.id.fab_microphone);
-        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        msectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mviewPager = findViewById(R.id.container);
-        mviewPager.setAdapter(mSectionsPagerAdapter);
+        mviewPager.setAdapter(msectionsPagerAdapter);
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
@@ -65,14 +76,6 @@ public class MainActivity extends AppCompatActivity {
         houndify.setClientId("n06WnSgzJbML7AuGNJou3Q==");
         houndify.setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
-
-        mbuttonSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
-                mviewPager.setCurrentItem(2);
-            }
-        });
     }
 
     public static class PlaceholderFragment extends Fragment {
@@ -81,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
+        private View recentView, playlistView;
+        private ListView mlistViewPlaylist, mlistViewCommands;
 
         public PlaceholderFragment() {}
 
@@ -99,14 +104,29 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View recentView = inflater.inflate(R.layout.fragment_recent, container, false);
-            View playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
+            recentView = inflater.inflate(R.layout.fragment_recent, container, false);
+            playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
                 return recentView;
             } else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 return playlistView;
             }
             return recentView;
+        }
+
+        @Override
+        public void onViewCreated(View view, Bundle savedInstanceState) {
+            super.onViewCreated(view, savedInstanceState);
+            mlistViewCommands = recentView.findViewById(R.id.commands);
+            mlistViewPlaylist = playlistView.findViewById(R.id.playlist);
+        }
+
+        public View getListViewPlaylist(){
+            return mlistViewPlaylist;
+        }
+
+        public View getListViewCommands(){
+            return mlistViewCommands;
         }
     }
 
@@ -115,6 +135,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart(){
         //  super calls the onStart function of the superType for this class
         super.onStart();
+
+        PlaceholderFragment f = (PlaceholderFragment) msectionsPagerAdapter.getItem(2);
+        mlistViewPlaylist = (ListView)f.getListViewPlaylist();
+
+        mbuttonSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
+                mlistViewPlaylist.setBackgroundColor(Color.RED);
+                mviewPager.setCurrentItem(2);
+            }
+        });
 
         ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
                 .setRedirectUri(REDIRECT_URI)
@@ -271,7 +303,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        private SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
