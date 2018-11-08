@@ -1,17 +1,30 @@
 package com.example.faari.perfectplaylsit;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
 @Entity
 public class Command {
     @PrimaryKey
-    public long mkey;
+    public long id;
+
+    @ColumnInfo(name = "command")
+    public String command;
 
     long getKey(){
-        return mkey;
+        return id;
     }
-    void setKey(long key){
-        mkey = key;
+
+    void setKey(long id){
+        this.id = id;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
     }
 }
