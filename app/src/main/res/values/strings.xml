@@ -13,4 +13,11 @@
     <string name="placeholder_song">Song</string>
     <string name="content_description_button_microphone">This is a button in the shape of a microphone</string>
     <string name="content_description_microphone_button">microphone</string>
+    <string name="instructions_question">What do you want to hear today?</string>
+    <string name="title_activity_main_test">MainTestActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

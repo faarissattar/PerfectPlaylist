@@ -1,18 +1,25 @@
 package com.example.faari.perfectplaylsit;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.OnLifecycleEvent;
+import android.arch.persistence.room.Room;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
 import com.hound.android.fd.HoundSearchResult;
@@ -33,6 +40,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -43,34 +51,26 @@ public class MainActivity extends AppCompatActivity {
     private static final String CLIENT_ID = "ffe427ae0c784377ab9f5afc7bf47a15";
     private static final String REDIRECT_URI = "https://example.com/redirect/";
     final static int REQUEST_CODE = 5744;
-    private TextView statusTextView;
-    private TextView contentTextView;
-    private ImageView btnSearch;
     private SpotifyAppRemote mSpotifyAppRemote;
-    private VoiceSearch voiceSearch;
+    private VoiceSearch mvoiceSearch;
+    private FloatingActionButton mbuttonSearch;
+    ViewPager mviewPager;
+    SectionsPagerAdapter msectionsPagerAdapter;
 
-    @Override   //  question over needing to explicitly create an overriden function
+    @Override   //  question over needing to explicitly create an overridden function
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_test);
-        statusTextView = findViewById(R.id.statusTextView);
-        contentTextView = findViewById(R.id.contentTextView);
-        btnSearch = findViewById(R.id.btnSearch);
+        setContentView(R.layout.activity_main);
+        SongDatabase songDB = Room.databaseBuilder(getApplicationContext(),
+                SongDatabase.class, "song").build();
+        CommandDatabase commandDB = Room.databaseBuilder(getApplicationContext(),
+                CommandDatabase.class, "command").build();
+        mbuttonSearch = findViewById(R.id.fab_microphone);
+        msectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        mviewPager = findViewById(R.id.container);
+        mviewPager.setAdapter(msectionsPagerAdapter);
 
-        if (isFirstTime()) {
-            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-            alertDialog.setTitle("Alert");
-            alertDialog.setMessage("To run this app correctly, Spotify must be installed on this device.");
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-            alertDialog.show();
-        }
-
-        ActivityCompat.requestPermissions(this, new String[] {
+        ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
         }, 0);
@@ -96,8 +96,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart(){
-        //  super calls the onStart function of the superType for this class
         super.onStart();
+
+        mbuttonSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
+                PlaceholderFragment.getListViewPlaylist().setBackgroundColor(Color.RED);
+                mviewPager.setCurrentItem(2);
+            }
+        });
 
         ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
                 .setRedirectUri(REDIRECT_URI)
@@ -124,18 +132,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE) {
-            final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
-            final HoundResponse houndResponse = result.getResponse();
-        }
+        //if (requestCode == REQUEST_CODE) {
+             //final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
+            //final HoundResponse houndResponse = result.getResponse();
+        //}
     }
 
     private void buildVoiceSearch() {
-        if (voiceSearch != null) {
+        if (mvoiceSearch != null) {
             return; // We are already searching
         }
 
-        voiceSearch = new VoiceSearch.Builder()
+        mvoiceSearch = new VoiceSearch.Builder()
                 .setRequestInfo(buildRequestInfo())
                 .setClientId("n06WnSgzJbML7AuGNJou3Q==")
                 .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
@@ -143,8 +151,8 @@ public class MainActivity extends AppCompatActivity {
                 .setAudioSource(new SimpleAudioByteStreamSource())
                 .build();
 
-        //Houndify.get(this).voiceSearch(this, REQUEST_CODE);
-        voiceSearch.start();
+        //Houndify.get(this).mvoiceSearch(this, REQUEST_CODE);
+        mvoiceSearch.start();
     }
 
     private HoundRequestInfo buildRequestInfo() {
@@ -171,11 +179,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startVoiceSearch(View view){
-        if (voiceSearch == null) {
+        if (mvoiceSearch == null) {
             buildVoiceSearch();
         }
         else {
-            voiceSearch.stopRecording();
+            mvoiceSearch.stopRecording();
         }
     }
 
@@ -186,6 +194,50 @@ public class MainActivity extends AppCompatActivity {
         SpotifyAppRemote.CONNECTOR.disconnect(mSpotifyAppRemote);
     }
 
+    public static class PlaceholderFragment extends Fragment {
+        /**
+         * The fragment argument representing the section number for this
+         * fragment.
+         */
+        private static final String ARG_SECTION_NUMBER = "section_number";
+        private static View recentView, playlistView;
+
+        public PlaceholderFragment() {}
+
+        /**
+         * Returns a new instance of this fragment for the given section
+         * number.
+         */
+        public static PlaceholderFragment newInstance(int sectionNumber) {
+            PlaceholderFragment fragment = new PlaceholderFragment();
+            Bundle args = new Bundle();
+            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            recentView = inflater.inflate(R.layout.fragment_recent, container, false);
+            playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
+                return recentView;
+            } else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
+                return playlistView;
+            }
+            return recentView;
+        }
+
+        public static View getListViewCommands(){
+            return recentView.findViewById(R.id.commands);
+        }
+
+        public static View getListViewPlaylist(){
+            return playlistView.findViewById(R.id.playlist);
+        }
+    }
+
     private final Listener voiceListener = new Listener();
 
     //------------------------------------------------------------------------------------------------------------
@@ -193,29 +245,31 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onTranscriptionUpdate(final PartialTranscript transcript) {
-            switch (voiceSearch.getState()) {
+            switch (mvoiceSearch.getState()) {
                 case STATE_STARTED:
-                    statusTextView.setText("Listening...");
+                    //statusTextView.setText("Listening...");
                     break;
 
                 case STATE_SEARCHING:
-                    statusTextView.setText("Receiving...");
+                    //statusTextView.setText("Receiving...");
                     break;
 
                 default:
-                    statusTextView.setText("Unknown");
+                    //statusTextView.setText("Unknown");
                     break;
             }
 
+            //contentTextView.setText("Transcription:\n" + transcript.getPartialTranscript());
             contentTextView.setText("\t\tTranscription:\n" + transcript.getPartialTranscript());
 
         }
 
         @Override
         public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
-            btnSearch.setClickable(true);
-            voiceSearch = null;
-            statusTextView.setText("Received Response");
+            mbuttonSearch.setClickable(true);
+            mvoiceSearch = null;
+
+            //statusTextView.setText("Received Response");
 
             ArrayList<String> seeds = new ArrayList<>();
             String jsonString;
@@ -255,27 +309,54 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("PROGRAM-RESULT", jsonString);
             }
 
+            //contentTextView.setText(jsonString);
             //btnSearch.setText("Search");
             //Toast.makeText(getApplicationContext(), jsonString, Toast.LENGTH_LONG).show();
         }
 
         @Override
         public void onError(final Exception ex, final VoiceSearchInfo info) {
-            voiceSearch = null;
+            mvoiceSearch = null;
 
-            statusTextView.setText("Something went wrong");
-            contentTextView.setText(ex.toString());
+            //statusTextView.setText("Something went wrong");
+            //contentTextView.setText(ex.toString());
         }
 
         @Override
         public void onRecordingStopped() {
-            statusTextView.setText("Receiving...");
+            //statusTextView.setText("Receiving...");
         }
 
         @Override
         public void onAbort(final VoiceSearchInfo info) {
-            voiceSearch = null;
-            statusTextView.setText("Aborted");
+            mvoiceSearch = null;
+            //statusTextView.setText("Aborted");
+        }
+    }
+
+    /**
+     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+     * one of the sections/tabs/pages.
+     */
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        private SectionsPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            // getItem is called to instantiate the fragment for the given page.
+            // Return a PlaceholderFragment (defined as a static inner class below).
+            return PlaceholderFragment.newInstance(position + 1);
+        }
+
+        @Override
+        public int getCount() {
+            // Show 2 total pages.
+            return 2;
         }
     }
 }
+
+
