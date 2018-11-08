@@ -3,9 +3,7 @@ package com.example.faari.perfectplaylsit;
 import android.Manifest;
 import android.arch.persistence.room.Room;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -35,7 +33,7 @@ import com.spotify.android.appremote.api.SpotifyAppRemote;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -53,6 +51,9 @@ public class MainActivity extends AppCompatActivity {
     private ListView mlistViewPlaylist;
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
+
+    private ArrayList<Song> testList;
+    private SongAdapter mSongAdapter;
 
     @Override   //  question over needing to explicitly create an overridden function
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +77,17 @@ public class MainActivity extends AppCompatActivity {
         houndify.setClientId("n06WnSgzJbML7AuGNJou3Q==");
         houndify.setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
+
+        testList = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            Song song = new Song();
+            song.setTitle("Rock " + i);
+            song.setArtist("Queen");
+            song.setLength(5);
+            testList.add(song);
+        }
+
+        mSongAdapter = new SongAdapter(this, testList);
     }
 
     public static class PlaceholderFragment extends Fragment {
@@ -237,7 +249,6 @@ public class MainActivity extends AppCompatActivity {
 
     private final Listener voiceListener = new Listener();
 
-    //------------------------------------------------------------------------------------------------------------
     private class Listener implements VoiceSearch.RawResponseListener {
 
         @Override
