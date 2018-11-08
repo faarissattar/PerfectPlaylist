@@ -1,6 +1,8 @@
 package com.example.faari.perfectplaylsit;
 
 import android.Manifest;
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.arch.persistence.room.Room;
 import android.content.Intent;
 import android.os.Bundle;
@@ -41,14 +43,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String CLIENT_ID = "ffe427ae0c784377ab9f5afc7bf47a15";
     private static final String REDIRECT_URI = "https://example.com/redirect/";
     final static int REQUEST_CODE = 5744;
-    //private TextView statusTextView;
-    //private TextView contentTextView;
-    //private ImageView btnSearch;
-    //private Button button;
     private SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
-    private ListView mlistViewPlaylist;
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
 
@@ -90,72 +87,15 @@ public class MainActivity extends AppCompatActivity {
         mSongAdapter = new SongAdapter(this, testList);
     }
 
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-        private View recentView, playlistView;
-        private ListView mlistViewPlaylist, mlistViewCommands;
-
-        public PlaceholderFragment() {}
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            recentView = inflater.inflate(R.layout.fragment_recent, container, false);
-            playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
-            if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
-                return recentView;
-            } else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
-                return playlistView;
-            }
-            return recentView;
-        }
-
-        @Override
-        public void onViewCreated(View view, Bundle savedInstanceState) {
-            super.onViewCreated(view, savedInstanceState);
-            mlistViewCommands = recentView.findViewById(R.id.commands);
-            mlistViewPlaylist = playlistView.findViewById(R.id.playlist);
-        }
-
-        public View getListViewPlaylist(){
-            return mlistViewPlaylist;
-        }
-
-        public View getListViewCommands(){
-            return mlistViewCommands;
-        }
-    }
-
-
     @Override
     protected void onStart(){
-        //  super calls the onStart function of the superType for this class
         super.onStart();
-
-        //PlaceholderFragment f = (PlaceholderFragment) msectionsPagerAdapter.getItem(2);
-        //mlistViewPlaylist = (ListView)f.getListViewPlaylist();
 
         mbuttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
-                //mlistViewPlaylist.setBackgroundColor(Color.RED);
+                PlaceholderFragment.getListViewPlaylist().setBackgroundColor(Color.RED);
                 mviewPager.setCurrentItem(2);
             }
         });
@@ -245,6 +185,50 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
 
         SpotifyAppRemote.CONNECTOR.disconnect(mSpotifyAppRemote);
+    }
+
+    public static class PlaceholderFragment extends Fragment {
+        /**
+         * The fragment argument representing the section number for this
+         * fragment.
+         */
+        private static final String ARG_SECTION_NUMBER = "section_number";
+        private static View recentView, playlistView;
+
+        public PlaceholderFragment() {}
+
+        /**
+         * Returns a new instance of this fragment for the given section
+         * number.
+         */
+        public static PlaceholderFragment newInstance(int sectionNumber) {
+            PlaceholderFragment fragment = new PlaceholderFragment();
+            Bundle args = new Bundle();
+            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            recentView = inflater.inflate(R.layout.fragment_recent, container, false);
+            playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
+                return recentView;
+            } else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
+                return playlistView;
+            }
+            return recentView;
+        }
+
+        public static View getListViewCommands(){
+            return recentView.findViewById(R.id.commands);
+        }
+
+        public static View getListViewPlaylist(){
+            return playlistView.findViewById(R.id.playlist);
+        }
     }
 
     private final Listener voiceListener = new Listener();
