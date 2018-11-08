@@ -33,6 +33,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -205,28 +208,55 @@ public class MainActivity extends AppCompatActivity {
             }
 
             contentTextView.setText("\t\tTranscription:\n" + transcript.getPartialTranscript());
+
         }
 
         @Override
         public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
             btnSearch.setClickable(true);
             voiceSearch = null;
-
             statusTextView.setText("Received Response");
 
+            ArrayList<String> seeds = new ArrayList<>();
             String jsonString;
-            try{
-                jsonString = new JSONObject(rawResponse).toString(4);
-                JSONObject jsonObj = new JSONObject(jsonString);
+            try {
+                JSONObject jsonObj = new JSONObject(rawResponse);
                 JSONArray results = jsonObj.getJSONArray("AllResults");
-                JSONObject resultsText = results.getJSONObject(0);
-                jsonString = resultsText.getString("WrittenResponse");
+                for (int k = 0; k < results.length(); k++) {
+                    JSONObject nativeData = results.getJSONObject(k).getJSONObject("NativeData");
+                    JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(0);
+                    JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
+
+                    int index = -1;
+                    for (int i = 0; i < thirdParty.length(); i++) {
+
+                        String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
+                        if (name.equals("Spotify")) {
+                            index = i;
+                        }
+                    }
+
+                    String seed = thirdParty.getJSONObject(index).getJSONArray("Ids").toString();
+
+
+                    String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
+                            + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
+                    Log.d("PROGRAM-RESULT", Resultingtrack);
+                    seeds.add(seed.substring(16, seed.length() - 2));
+                }
+                String output = "";
+                for (String s : seeds)
+                {
+                    output += s + "\t";
+                }
+                Log.d("PROGRAM-RESULT", output);
             } catch (JSONException ex){
                 jsonString = "failed";
+                Log.d("PROGRAM-RESULT", jsonString);
             }
 
             //btnSearch.setText("Search");
-            Toast.makeText(getApplicationContext(), jsonString, Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), jsonString, Toast.LENGTH_LONG).show();
         }
 
         @Override
