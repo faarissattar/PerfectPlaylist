@@ -5,6 +5,7 @@ import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.OnLifecycleEvent;
 import android.arch.persistence.room.Room;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -260,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             //contentTextView.setText("Transcription:\n" + transcript.getPartialTranscript());
-            contentTextView.setText("\t\tTranscription:\n" + transcript.getPartialTranscript());
+//            contentTextView.setText("\t\tTranscription:\n" + transcript.getPartialTranscript());
 
         }
 
@@ -309,9 +310,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("PROGRAM-RESULT", jsonString);
             }
 
-            //contentTextView.setText(jsonString);
-            //btnSearch.setText("Search");
-            //Toast.makeText(getApplicationContext(), jsonString, Toast.LENGTH_LONG).show();
         }
 
         @Override
