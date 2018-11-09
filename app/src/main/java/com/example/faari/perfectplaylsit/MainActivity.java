@@ -5,7 +5,6 @@ import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.OnLifecycleEvent;
 import android.arch.persistence.room.Room;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -23,7 +22,6 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
-import com.hound.android.fd.HoundSearchResult;
 import com.hound.android.fd.Houndify;
 import com.hound.android.fd.UserIdFactory;
 import com.hound.android.sdk.VoiceSearch;
@@ -31,20 +29,15 @@ import com.hound.android.sdk.VoiceSearchInfo;
 import com.hound.android.sdk.audio.SimpleAudioByteStreamSource;
 import com.hound.android.sdk.util.HoundRequestInfoFactory;
 import com.hound.core.model.sdk.HoundRequestInfo;
-import com.hound.core.model.sdk.HoundResponse;
 import com.hound.core.model.sdk.PartialTranscript;
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -80,19 +73,6 @@ public class MainActivity extends AppCompatActivity {
         houndify.setClientId("n06WnSgzJbML7AuGNJou3Q==");
         houndify.setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
-    }
-
-    private boolean isFirstTime()
-    {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        boolean ranBefore = preferences.getBoolean("RanBefore", false);
-        if (!ranBefore) {
-            // first time
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putBoolean("RanBefore", true);
-            editor.commit();
-        }
-        return !ranBefore;
     }
 
     @Override
@@ -261,8 +241,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             //contentTextView.setText("Transcription:\n" + transcript.getPartialTranscript());
-//            contentTextView.setText("\t\tTranscription:\n" + transcript.getPartialTranscript());
-
         }
 
         @Override
@@ -272,44 +250,15 @@ public class MainActivity extends AppCompatActivity {
 
             //statusTextView.setText("Received Response");
 
-            ArrayList<String> seeds = new ArrayList<>();
             String jsonString;
             try {
-                JSONObject jsonObj = new JSONObject(rawResponse);
-                JSONArray results = jsonObj.getJSONArray("AllResults");
-                for (int k = 0; k < results.length(); k++) {
-                    JSONObject nativeData = results.getJSONObject(k).getJSONObject("NativeData");
-                    JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(0);
-                    JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
-
-                    int index = -1;
-                    for (int i = 0; i < thirdParty.length(); i++) {
-
-                        String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
-                        if (name.equals("Spotify")) {
-                            index = i;
-                        }
-                    }
-
-                    String seed = thirdParty.getJSONObject(index).getJSONArray("Ids").toString();
-
-
-                    String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
-                            + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
-                    Log.d("PROGRAM-RESULT", Resultingtrack);
-                    seeds.add(seed.substring(16, seed.length() - 2));
-                }
-                String output = "";
-                for (String s : seeds)
-                {
-                    output += s + "\t";
-                }
-                Log.d("PROGRAM-RESULT", output);
-            } catch (JSONException ex){
-                jsonString = "failed";
-                Log.d("PROGRAM-RESULT", jsonString);
+                jsonString = new JSONObject(rawResponse).toString(4);
+            } catch (final JSONException ex) {
+                jsonString = "Failed to parse content:\n" + rawResponse;
             }
 
+            //contentTextView.setText(jsonString);
+            //btnSearch.setText("Search");
         }
 
         @Override

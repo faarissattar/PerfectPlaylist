@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".MainTestActivity">
+    tools:context=".MainActivity">
 
     <android.support.v4.view.ViewPager
         android:id="@+id/container"
@@ -15,12 +15,11 @@
         android:background="@color/colorBackground"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_microphone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="24dp"
         android:clickable="true"
         android:focusable="true"
         app:backgroundTint="@color/colorAccent"
