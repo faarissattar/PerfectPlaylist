@@ -19,7 +19,7 @@
         android:id="@+id/fab_microphone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         android:clickable="true"
         android:focusable="true"
         app:backgroundTint="@color/colorAccent"

@@ -30,28 +30,25 @@ public class SongAdapter extends ArrayAdapter<Song> {
         if (convertView == null) {
             convertView = LayoutInflater.from(mContext).inflate(R.layout.playlist_item, parent, false);
             holder = new ViewHolder();
-            holder.albumCover = convertView.findViewById(R.id.iv_album_cover);
             holder.songName = convertView.findViewById(R.id.tv_song_name);
-            holder.artistName = convertView.findViewById(R.id.tv_artist_name);
-            holder.songLength = convertView.findViewById(R.id.tv_song_length);
+            holder.artistAndAlbum = convertView.findViewById(R.id.tv_artist_album);
+            holder.songLength = convertView.findViewById(R.id.tv_length);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
         Song currentSong = mSongList.get(position);
-        // holder.albumCover.setImageResource();
         holder.songName.setText(currentSong.getTitle());
-        holder.artistName.setText(currentSong.getArtist());
+        holder.artistAndAlbum.setText(currentSong.getArtist() + "\u2022" + currentSong.getAlbum());
         holder.songLength.setText(currentSong.getLength());
 
         return convertView;
     }
 
     private static class ViewHolder {
-        ImageView albumCover;
         TextView songName;
-        TextView artistName;
+        TextView artistAndAlbum;
         TextView songLength;
     }
 }

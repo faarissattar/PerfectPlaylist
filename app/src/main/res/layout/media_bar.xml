@@ -15,7 +15,7 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_song_playing"
-        app:srcCompat="@drawable/ic_play_arrow_white" />
+        app:srcCompat="@drawable/ic_play_arrow" />
 
     <ImageView
         android:id="@+id/iv_next_btn"
@@ -25,7 +25,7 @@
         android:layout_marginStart="24dp"
         app:layout_constraintStart_toEndOf="@+id/iv_play_btn"
         app:layout_constraintTop_toTopOf="@+id/iv_play_btn"
-        app:srcCompat="@drawable/ic_skip_next_white" />
+        app:srcCompat="@drawable/ic_skip_next" />
 
     <ImageView
         android:id="@+id/iv_previous_btn"
@@ -35,7 +35,7 @@
         android:layout_marginRight="24dp"
         app:layout_constraintEnd_toStartOf="@+id/iv_play_btn"
         app:layout_constraintTop_toTopOf="@+id/iv_play_btn"
-        app:srcCompat="@drawable/ic_skip_previous_white" />
+        app:srcCompat="@drawable/ic_skip_previous" />
 
     <TextView
         android:id="@+id/tv_song_playing"

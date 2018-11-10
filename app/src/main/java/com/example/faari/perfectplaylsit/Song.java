@@ -4,6 +4,8 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
+import com.spotify.protocol.types.Artist;
+
 @Entity
 public class Song {
     @PrimaryKey
@@ -17,6 +19,11 @@ public class Song {
     public String album;
     @ColumnInfo(name = "length")
     public int length;
+
+//    public Song(String URI){
+//        title;
+//        artist = new Artist(URI).name;
+//    }
 
     long getKey(){
         return id;

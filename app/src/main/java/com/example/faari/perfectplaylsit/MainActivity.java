@@ -213,11 +213,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public static View getListViewCommands(){
-            return recentView.findViewById(R.id.commands);
+            return recentView.findViewById(R.id.lv_commands);
         }
 
         public static View getListViewPlaylist(){
-            return playlistView.findViewById(R.id.playlist);
+            return playlistView.findViewById(R.id.lv_playlist);
         }
     }
 

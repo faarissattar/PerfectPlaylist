@@ -3,58 +3,50 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="72dp"
+    android:layout_height="64dp"
     android:background="@color/colorBackground">
 
     <TextView
         android:id="@+id/tv_song_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="88dp"
-        android:layout_marginStart="88dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/roboto_light"
         android:text="Song Name"
         android:textColor="@android:color/white"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:fontFamily="@font/roboto_light"
-        app:layout_constraintBottom_toTopOf="@+id/tv_artist_name"
+        app:layout_constraintBottom_toTopOf="@+id/tv_artist_album"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="Song Name" />
 
     <TextView
-        android:id="@+id/tv_artist_name"
+        android:id="@+id/tv_artist_album"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Artist Name"
+        android:fontFamily="@font/roboto_light"
+        android:text="Artist Name \u2022 Album Name"
         android:textColor="@android:color/white"
         android:textSize="14sp"
-        app:fontFamily="@font/roboto_light"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/tv_song_name"
-        app:layout_constraintTop_toBottomOf="@+id/tv_song_name" />
-
-    <ImageView
-        android:id="@+id/iv_album_cover"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/tv_song_name"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_library_music" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_song_name"
+        tools:text="Artist Name \u2022 Album Name" />
 
     <TextView
-        android:id="@+id/tv_song_length"
+        android:id="@+id/tv_length"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:fontFamily="@font/roboto_light"
         android:text="TextView"
-        android:textColor="@color/houndify_white"
+        android:textColor="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="3:14" />
-
+        tools:text="3.14" />
 </android.support.constraint.ConstraintLayout>
