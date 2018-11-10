@@ -3,13 +3,14 @@ package com.example.faari.perfectplaylsit;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 import com.spotify.protocol.types.Artist;
 
 @Entity
 public class Song {
     @PrimaryKey
-    public long id;
+    @NonNull public String uri;
 
     @ColumnInfo(name = "title")
     public String title;
@@ -20,17 +21,20 @@ public class Song {
     @ColumnInfo(name = "length")
     public int length;
 
-//    public Song(String URI){
-//        title;
-//        artist = new Artist(URI).name;
-//    }
-
-    long getKey(){
-        return id;
+    public Song(String uri){
+        this.uri = uri;
+        title = "Call Me Maybe";
+        artist = "Carly Rae Jepson";
+        album = "Some album";
+        length = 62;
     }
 
-    void setKey(long id){
-        this.id = id;
+    String getKey(){
+        return uri;
+    }
+
+    void setKey(String uri){
+        this.uri = uri;
     }
 
     public String getTitle() {

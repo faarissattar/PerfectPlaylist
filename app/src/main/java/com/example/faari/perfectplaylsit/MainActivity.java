@@ -19,7 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
@@ -39,6 +39,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -53,19 +54,29 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton mbuttonSearch;
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
+    SongDatabase songDB;
+    CommandDatabase commandDB;
+    SongAdapter songAdapter;
+    ArrayAdapter<Command> commandAdapter;
 
-    @Override   //  question over needing to explicitly create an overridden function
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SongDatabase songDB = Room.databaseBuilder(getApplicationContext(),
-                SongDatabase.class, "song").build();
-        CommandDatabase commandDB = Room.databaseBuilder(getApplicationContext(),
-                CommandDatabase.class, "command").build();
+
+        commandDB = Room.databaseBuilder(getApplicationContext(),
+                CommandDatabase.class, "command").allowMainThreadQueries().build();
+        songDB = Room.databaseBuilder(getApplicationContext(),
+                SongDatabase.class, "song").allowMainThreadQueries().build();
+
         mbuttonSearch = findViewById(R.id.fab_microphone);
         msectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mviewPager = findViewById(R.id.container);
         mviewPager.setAdapter(msectionsPagerAdapter);
+        ArrayList<Song> currentSongs = new ArrayList<Song>();
+        songAdapter = new SongAdapter(getApplicationContext(), currentSongs);
+        ArrayList<Command> recentCommands = new ArrayList<Command>();
+        commandAdapter = new ArrayAdapter<Command>(getApplicationContext(), android.R.layout.simple_list_item_1, recentCommands);
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
@@ -86,7 +97,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
-                PlaceholderFragment.getListViewPlaylist().setBackgroundColor(Color.RED);
+                //Command command = new Command("Some new command yay!");
+                //PlaceholderFragment.getListViewPlaylist().setAdapter(songAdapter);
+                //PlaceholderFragment.getListViewCommands().setAdapter(commandAdapter);
+                //commandDB.commandDAO().insertAll(command);
+                //songDB.songDAO().deleteAll();
+                //for(int i = 0; i<6; i++) {
+                    //songDB.songDAO().insertAll(new Song("Some uri goes here" + i));
+                //}
+                //songAdapter.clear();
+                //songAdapter.add(new Song("frbgrugubgdriu"));
+                //songAdapter.addAll(songDB.songDAO().getAll());
+                //commandAdapter.add(command);
                 mviewPager.setCurrentItem(2);
             }
         });
@@ -117,8 +139,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //if (requestCode == REQUEST_CODE) {
-             //final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
-            //final HoundResponse houndResponse = result.getResponse();
+        //final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
+        //final HoundResponse houndResponse = result.getResponse();
         //}
     }
 
@@ -205,39 +227,7 @@ public class MainActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             recentView = inflater.inflate(R.layout.fragment_recent, container, false);
             playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
-            View songBar = playlistView.findViewById(R.id.inc_song_bar);
-
-            final ImageView previousBtn = songBar.findViewById(R.id.iv_previous);
-            previousBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // skip to previous
-                }
-            });
-
-            final ImageView nextBtn = songBar.findViewById(R.id.iv_next);
-            nextBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // skip to next
-                }
-            });
-
-            final ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
-            playPauseBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (playPauseBtn.getDrawable().getConstantState() == getResources().getDrawable(R.drawable.ic_play_arrow).getConstantState()) {
-                        // pause music
-                        playPauseBtn.setImageResource(R.drawable.ic_pause);
-                    } else {
-                        // play music
-                        playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
-                    }
-                }
-            });
-
-            if (getArguments().getInt(ARG_SECTION_NUMBER)==1){
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
                 return recentView;
             } else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 return playlistView;
@@ -245,17 +235,18 @@ public class MainActivity extends AppCompatActivity {
             return recentView;
         }
 
-        public static View getListViewCommands(){
+        public static ListView getListViewCommands(){
             return recentView.findViewById(R.id.lv_commands);
         }
 
-        public static View getListViewPlaylist(){
+        public static ListView getListViewPlaylist(){
             return playlistView.findViewById(R.id.lv_playlist);
         }
     }
 
     private final Listener voiceListener = new Listener();
 
+    //------------------------------------------------------------------------------------------------------------
     private class Listener implements VoiceSearch.RawResponseListener {
 
         @Override
@@ -368,5 +359,3 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
-
-

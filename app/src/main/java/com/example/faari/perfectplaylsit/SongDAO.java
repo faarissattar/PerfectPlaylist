@@ -12,7 +12,7 @@ public interface SongDAO {
     @Query("SELECT * FROM song")
     List<Song> getAll();
 
-    @Query("SELECT * FROM song WHERE id IN (:songIds)")
+    @Query("SELECT * FROM song WHERE uri IN (:songIds)")
     List<Song> loadAllByIds(long[] songIds);
 
     @Query("SELECT * FROM song WHERE artist LIKE :artist")
@@ -23,6 +23,9 @@ public interface SongDAO {
 
     @Query("SELECT * FROM song WHERE album LIKE :album")
     Song findAllByAlbum(String album);
+
+    @Query("DELETE FROM song")
+    void deleteAll();
 
     @Insert
     void insertAll(Song... songs);

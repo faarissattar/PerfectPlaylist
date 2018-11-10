@@ -12,6 +12,10 @@ public class Command {
     @ColumnInfo(name = "command")
     public String command;
 
+    public Command(String command){
+        this.command = command;
+    }
+
     long getKey(){
         return id;
     }
