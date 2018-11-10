@@ -34,9 +34,11 @@ import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -250,15 +252,44 @@ public class MainActivity extends AppCompatActivity {
 
             //statusTextView.setText("Received Response");
 
+            ArrayList<String> seeds = new ArrayList<>();
             String jsonString;
             try {
-                jsonString = new JSONObject(rawResponse).toString(4);
-            } catch (final JSONException ex) {
-                jsonString = "Failed to parse content:\n" + rawResponse;
+                JSONObject jsonObj = new JSONObject(rawResponse);
+                JSONArray results = jsonObj.getJSONArray("AllResults");
+                for (int k = 0; k < results.length(); k++) {
+                    JSONObject nativeData = results.getJSONObject(k).getJSONObject("NativeData");
+                    JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(0);
+                    JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
+
+                    int index = -1;
+                    for (int i = 0; i < thirdParty.length(); i++) {
+
+                        String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
+                        if (name.equals("Spotify")) {
+                            index = i;
+                        }
+                    }
+
+                    String seed = thirdParty.getJSONObject(index).getJSONArray("Ids").toString();
+
+
+                    String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
+                            + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
+                    Log.d("PROGRAM-RESULT", Resultingtrack);
+                    seeds.add(seed.substring(16, seed.length() - 2));
+                }
+                String output = "";
+                for (String s : seeds)
+                {
+                    output += s + "\t";
+                }
+                Log.d("PROGRAM-RESULT", output);
+            } catch (JSONException ex){
+                jsonString = "failed";
+                Log.d("PROGRAM-RESULT", jsonString);
             }
 
-            //contentTextView.setText(jsonString);
-            //btnSearch.setText("Search");
         }
 
         @Override
