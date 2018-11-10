@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
@@ -204,7 +205,39 @@ public class MainActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             recentView = inflater.inflate(R.layout.fragment_recent, container, false);
             playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
-            if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
+            View songBar = playlistView.findViewById(R.id.inc_song_bar);
+
+            final ImageView previousBtn = songBar.findViewById(R.id.iv_previous);
+            previousBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // skip to previous
+                }
+            });
+
+            final ImageView nextBtn = songBar.findViewById(R.id.iv_next);
+            nextBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // skip to next
+                }
+            });
+
+            final ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
+            playPauseBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (playPauseBtn.getDrawable().getConstantState() == getResources().getDrawable(R.drawable.ic_play_arrow).getConstantState()) {
+                        // pause music
+                        playPauseBtn.setImageResource(R.drawable.ic_pause);
+                    } else {
+                        // play music
+                        playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
+                    }
+                }
+            });
+
+            if (getArguments().getInt(ARG_SECTION_NUMBER)==1){
                 return recentView;
             } else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
                 return playlistView;
@@ -223,7 +256,6 @@ public class MainActivity extends AppCompatActivity {
 
     private final Listener voiceListener = new Listener();
 
-    //------------------------------------------------------------------------------------------------------------
     private class Listener implements VoiceSearch.RawResponseListener {
 
         @Override
