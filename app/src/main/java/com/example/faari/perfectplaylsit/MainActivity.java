@@ -97,18 +97,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
-                //Command command = new Command("Some new command yay!");
-                //PlaceholderFragment.getListViewPlaylist().setAdapter(songAdapter);
-                //PlaceholderFragment.getListViewCommands().setAdapter(commandAdapter);
+                Command command = new Command("Some new command yay!");
+                PlaceholderFragment.getListViewPlaylist().setAdapter(songAdapter);
+                PlaceholderFragment.getListViewCommands().setAdapter(commandAdapter);
                 //commandDB.commandDAO().insertAll(command);
                 //songDB.songDAO().deleteAll();
                 //for(int i = 0; i<6; i++) {
                     //songDB.songDAO().insertAll(new Song("Some uri goes here" + i));
                 //}
-                //songAdapter.clear();
-                //songAdapter.add(new Song("frbgrugubgdriu"));
+                //songAdapter.removeAll();
+                Song song = new Song("gresgrdsg");
+                songAdapter.add(song);
                 //songAdapter.addAll(songDB.songDAO().getAll());
-                //commandAdapter.add(command);
+                commandAdapter.add(command);
                 mviewPager.setCurrentItem(2);
             }
         });

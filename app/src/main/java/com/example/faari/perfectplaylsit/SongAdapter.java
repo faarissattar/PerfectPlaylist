@@ -41,7 +41,7 @@ public class SongAdapter extends ArrayAdapter<Song> {
         Song currentSong = mSongList.get(position);
         holder.songName.setText(currentSong.getTitle());
         holder.artistAndAlbum.setText(currentSong.getArtist() + "\u2022" + currentSong.getAlbum());
-        holder.songLength.setText(currentSong.getLength());
+        holder.songLength.setText(currentSong.getLength() + "");
 
         return convertView;
     }
@@ -50,6 +50,12 @@ public class SongAdapter extends ArrayAdapter<Song> {
         TextView songName;
         TextView artistAndAlbum;
         TextView songLength;
+    }
+
+    public void removeAll(){
+        for(int i = 0; i<mSongList.size(); i++){
+            mSongList.remove(i);
+        }
     }
 }
 
