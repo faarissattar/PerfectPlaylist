@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<Command> commandAdapter;
     CurrentState state;
 
+    //TODO: Make Playlist run like playlist, i.e. make one song play after the other
     //Why does this method have to be static?
     public void SpotifyWebAPIParser(String rawResponse) {
         try {
@@ -114,6 +116,8 @@ public class MainActivity extends AppCompatActivity {
         mviewPager.setAdapter(msectionsPagerAdapter);
         songAdapter = new SongAdapter(getApplicationContext(), state.getSongList());
         commandAdapter = new ArrayAdapter<Command>(getApplicationContext(), android.R.layout.simple_list_item_1, state.getCommandList());
+        PlaceholderFragment.setAdapterCommands(commandAdapter);
+        PlaceholderFragment.setAdapterPlaylist(songAdapter);
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
@@ -134,8 +138,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
-                PlaceholderFragment.getListViewPlaylist().setAdapter(songAdapter);
-                PlaceholderFragment.getListViewCommands().setAdapter(commandAdapter);
                 //TODO: Put code here to get results from Houndify and Spotify
                 //state.pushCommand("THE COMMAND FROM HOUNDIFY HERE")
                 //state.setSongList(THE NEW PLAYLIST)
@@ -144,6 +146,8 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
                 startService(intent1);
                 mviewPager.setCurrentItem(2);
+                //TODO: Make first item in list start playing
+                //TODO: Put info from first item in list to the Now Playing View
             }
         });
 
@@ -241,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
         private static View recentView, playlistView;
+        private static ListView recentListView, playlistListView;
 
         public PlaceholderFragment() {}
 
@@ -261,6 +266,28 @@ public class MainActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             recentView = inflater.inflate(R.layout.fragment_recent, container, false);
             playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
+            getListViewCommands();
+            getListViewPlaylist();
+            playlistListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Song song = (Song)playlistListView.getItemAtPosition(i);
+                    //TODO: Make song play
+                    //TODO: Put song info in Now Playing bar
+                }
+            });
+            recentListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Command command = (Command)recentListView.getItemAtPosition(i);
+                    //TODO: Make this command run
+                    CurrentState state = (CurrentState)getContext();
+                    ArrayList<Command> commands = state.getCommandList();
+                    commands.add(0, command);
+                    commands.remove(command);
+                    state.setCommandList(commands);
+                }
+            });
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
                 return recentView;
             } else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
@@ -270,11 +297,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public static ListView getListViewCommands(){
-            return recentView.findViewById(R.id.lv_commands);
+            recentListView = recentView.findViewById(R.id.lv_commands);
+            return recentListView;
+        }
+
+        public static void setAdapterCommands(ArrayAdapter<Command> commandArrayAdapter){
+            if(recentListView == null){
+                getListViewCommands();
+            }
+            recentListView.setAdapter(commandArrayAdapter);
         }
 
         public static ListView getListViewPlaylist(){
-            return playlistView.findViewById(R.id.lv_playlist);
+            playlistListView = playlistView.findViewById(R.id.lv_playlist);
+            return playlistListView;
+        }
+
+        public static void setAdapterPlaylist(SongAdapter songAdapter){
+            if(playlistListView == null){
+                getListViewPlaylist();
+            }
+            playlistListView.setAdapter(songAdapter);
         }
     }
 
