@@ -60,6 +60,45 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<Command> commandAdapter;
     CurrentState state;
 
+
+    public static void SpotifyWebAPIParser(String rawResponse) {
+        try {
+            JSONObject raw = new JSONObject(rawResponse);
+            JSONArray tracksObj = raw.getJSONArray("tracks");
+            ArrayList<Song> songs = new ArrayList<>();
+
+            String name;
+            String uri;
+            String id;
+            String imgUrl;
+            String album;
+            String artists;
+            int duration;
+            String[] arr = new String[6];
+            JSONObject temp = null;
+            for (int i = 0; i < tracksObj.length(); i ++) {
+                temp = tracksObj.getJSONObject(i);
+
+                arr[0] = temp.getString("name");
+                arr[2] = temp.getString("uri");
+                arr[3] = temp.getString("id");
+                arr[4] = temp.getJSONObject("album").getJSONArray("images").getJSONObject( temp.getJSONObject("album").getJSONArray("images").length()-1).getString("url");
+                arr[5] = temp.getJSONObject("album").getString("name");
+                arr[6] = temp.getJSONArray("artists").getJSONObject(0).getString("name");
+                duration = Integer.parseInt(temp.getString("duration_ms"));
+
+                songs.add(new Song(arr, duration));
+
+            }
+
+
+
+        } catch (Exception e) {
+
+        }
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

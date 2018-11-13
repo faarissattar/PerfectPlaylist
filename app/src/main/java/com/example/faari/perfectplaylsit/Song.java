@@ -20,13 +20,20 @@ public class Song {
     public String album;
     @ColumnInfo(name = "length")
     public int length;
+    @ColumnInfo(name = "imgUrl")
+    String imgUrl;
+    @ColumnInfo(name = "spotifyId")
+    String spotifyId;
 
-    public Song(String uri){
-        this.uri = uri;
-        title = "Call Me Maybe";
-        artist = "Carly Rae Jepson";
-        album = "Some album";
-        length = 62;
+    public Song(String arr[], int duration){
+
+        this.title = arr[0];
+        this.uri = arr[0];
+        this.spotifyId = arr[0];
+        this.imgUrl = arr[0];
+        this.album = arr[0];
+        this.artist = arr[0];
+        this.length = duration;
     }
 
     String getKey(){
