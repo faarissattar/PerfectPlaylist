@@ -23,4 +23,8 @@ public class CurrentState extends Application {
     public void setCommandList(ArrayList<Command> commandList) {
         this.commandList = commandList;
     }
+
+    public void pushCommand(Command command){
+        commandList.add(0, command);
+    }
 }

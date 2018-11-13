@@ -134,11 +134,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
-                Command command = new Command("Some new command yay!");
                 PlaceholderFragment.getListViewPlaylist().setAdapter(songAdapter);
                 PlaceholderFragment.getListViewCommands().setAdapter(commandAdapter);
+                //TODO: Put code here to get results from Houndify and Spotify
+                //state.pushCommand("THE COMMAND FROM HOUNDIFY HERE")
+                //state.setSongList(THE NEW PLAYLIST)
                 commandAdapter.notifyDataSetChanged();
-                SpotifyWebAPIParser("gragrrgrdg");
                 songAdapter.notifyDataSetChanged();
                 Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
                 startService(intent1);
