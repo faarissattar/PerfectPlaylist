@@ -116,8 +116,6 @@ public class MainActivity extends AppCompatActivity {
         mviewPager.setAdapter(msectionsPagerAdapter);
         songAdapter = new SongAdapter(getApplicationContext(), state.getSongList());
         commandAdapter = new ArrayAdapter<Command>(getApplicationContext(), android.R.layout.simple_list_item_1, state.getCommandList());
-        PlaceholderFragment.setAdapterCommands(commandAdapter);
-        PlaceholderFragment.setAdapterPlaylist(songAdapter);
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
@@ -138,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
+                PlaceholderFragment.setAdapterCommands(commandAdapter);
+                PlaceholderFragment.setAdapterPlaylist(songAdapter);
                 //TODO: Put code here to get results from Houndify and Spotify
                 //state.pushCommand("THE COMMAND FROM HOUNDIFY HERE")
                 //state.setSongList(THE NEW PLAYLIST)
