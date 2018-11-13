@@ -58,25 +58,21 @@ public class MainActivity extends AppCompatActivity {
     CommandDatabase commandDB;
     SongAdapter songAdapter;
     ArrayAdapter<Command> commandAdapter;
+    CurrentState state;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        commandDB = Room.databaseBuilder(getApplicationContext(),
-                CommandDatabase.class, "command").allowMainThreadQueries().build();
-        songDB = Room.databaseBuilder(getApplicationContext(),
-                SongDatabase.class, "song").allowMainThreadQueries().build();
-
+        state = (CurrentState) getApplication();
+        if(state.getCommandList() == null) state.setCommandList(new ArrayList<Command>());
+        if(state.getSongList() == null) state.setSongList(new ArrayList<Song>());
         mbuttonSearch = findViewById(R.id.fab_microphone);
         msectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mviewPager = findViewById(R.id.container);
         mviewPager.setAdapter(msectionsPagerAdapter);
-        ArrayList<Song> currentSongs = new ArrayList<Song>();
-        songAdapter = new SongAdapter(getApplicationContext(), currentSongs);
-        ArrayList<Command> recentCommands = new ArrayList<Command>();
-        commandAdapter = new ArrayAdapter<Command>(getApplicationContext(), android.R.layout.simple_list_item_1, recentCommands);
+        songAdapter = new SongAdapter(getApplicationContext(), state.getSongList());
+        commandAdapter = new ArrayAdapter<Command>(getApplicationContext(), android.R.layout.simple_list_item_1, state.getCommandList());
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
@@ -100,16 +96,14 @@ public class MainActivity extends AppCompatActivity {
                 Command command = new Command("Some new command yay!");
                 PlaceholderFragment.getListViewPlaylist().setAdapter(songAdapter);
                 PlaceholderFragment.getListViewCommands().setAdapter(commandAdapter);
-                //commandDB.commandDAO().insertAll(command);
-                //songDB.songDAO().deleteAll();
-                //for(int i = 0; i<6; i++) {
-                    //songDB.songDAO().insertAll(new Song("Some uri goes here" + i));
-                //}
-                //songAdapter.removeAll();
-                Song song = new Song("gresgrdsg");
-                songAdapter.add(song);
-                //songAdapter.addAll(songDB.songDAO().getAll());
-                commandAdapter.add(command);
+                state.getCommandList().add(0, command);
+                commandAdapter.notifyDataSetChanged();
+                for(int i = 0; i<6; i++) {
+                    state.getSongList().add(new Song("gregreg"));
+                }
+                songAdapter.notifyDataSetChanged();
+                Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
+                startService(intent1);
                 mviewPager.setCurrentItem(2);
             }
         });

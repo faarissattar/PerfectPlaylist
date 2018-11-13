@@ -5,12 +5,17 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 @Dao
 public interface CommandDAO {
     @Query("SELECT * FROM command")
     List<Command> getAll();
+
+    @Query("DELETE FROM command")
+    void deleteAll();
 
     @Query("SELECT * FROM command WHERE id IN (:commandIds)")
     List<Command> loadAllByIds(long[] commandIds);
