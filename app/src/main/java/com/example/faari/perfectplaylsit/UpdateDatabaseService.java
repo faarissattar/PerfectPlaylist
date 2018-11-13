@@ -15,13 +15,13 @@ public class UpdateDatabaseService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         CurrentState state = (CurrentState)getApplication();
-        CommandDatabase.getInstance(getApplicationContext()).commandDAO().deleteAll();
+        AppDatabase.getInstance(getApplicationContext()).appDAO().deleteAllCommands();
         for(int i = 0; i<state.getCommandList().size(); i++) {
-            CommandDatabase.getInstance(getApplicationContext()).commandDAO().insertAll(state.getCommandList().get(i));
+            AppDatabase.getInstance(getApplicationContext()).appDAO().insertAll(state.getCommandList().get(i));
         }
-        SongDatabase.getInstance(getApplicationContext()).songDAO().deleteAll();
+        AppDatabase.getInstance(getApplicationContext()).appDAO().deleteAllSongs();
         for(int i = 0; i<state.getSongList().size(); i++) {
-            SongDatabase.getInstance(getApplicationContext()).songDAO().insertAll(state.getSongList().get(i));
+            AppDatabase.getInstance(getApplicationContext()).appDAO().insertAll(state.getSongList().get(i));
         }
         requestBackup();
     }

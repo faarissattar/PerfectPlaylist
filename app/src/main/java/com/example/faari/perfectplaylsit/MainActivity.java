@@ -29,6 +29,7 @@ import com.hound.android.sdk.VoiceSearch;
 import com.hound.android.sdk.VoiceSearchInfo;
 import com.hound.android.sdk.audio.SimpleAudioByteStreamSource;
 import com.hound.android.sdk.util.HoundRequestInfoFactory;
+import com.hound.core.model.sdk.CommandResult;
 import com.hound.core.model.sdk.HoundRequestInfo;
 import com.hound.core.model.sdk.PartialTranscript;
 import com.spotify.android.appremote.api.ConnectionParams;
@@ -54,14 +55,12 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton mbuttonSearch;
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
-    SongDatabase songDB;
-    CommandDatabase commandDB;
     SongAdapter songAdapter;
     ArrayAdapter<Command> commandAdapter;
     CurrentState state;
 
-
-    public static void SpotifyWebAPIParser(String rawResponse) {
+    //Why does this method have to be static?
+    public void SpotifyWebAPIParser(String rawResponse) {
         try {
             JSONObject raw = new JSONObject(rawResponse);
             JSONArray tracksObj = raw.getJSONArray("tracks");
@@ -87,7 +86,10 @@ public class MainActivity extends AppCompatActivity {
                 arr[6] = temp.getJSONArray("artists").getJSONObject(0).getString("name");
                 duration = Integer.parseInt(temp.getString("duration_ms"));
 
-                songs.add(new Song(arr, duration));
+                Song song = new Song(duration);
+                song.setSongInfo(arr);
+                songs.add(song);
+                state.setSongList(songs);
 
             }
 
@@ -135,11 +137,8 @@ public class MainActivity extends AppCompatActivity {
                 Command command = new Command("Some new command yay!");
                 PlaceholderFragment.getListViewPlaylist().setAdapter(songAdapter);
                 PlaceholderFragment.getListViewCommands().setAdapter(commandAdapter);
-                state.getCommandList().add(0, command);
                 commandAdapter.notifyDataSetChanged();
-                for(int i = 0; i<6; i++) {
-                    state.getSongList().add(new Song("gregreg"));
-                }
+                SpotifyWebAPIParser("gragrrgrdg");
                 songAdapter.notifyDataSetChanged();
                 Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
                 startService(intent1);
@@ -316,6 +315,9 @@ public class MainActivity extends AppCompatActivity {
                 JSONArray results = jsonObj.getJSONArray("AllResults");
                 for (int k = 0; k < results.length(); k++) {
                     JSONObject nativeData = results.getJSONObject(k).getJSONObject("NativeData");
+                    ArrayList<Command> commands = state.getCommandList();
+                    commands.add(0, new Command(nativeData.getString("FormattedTranscription")));
+                    state.setCommandList(commands);
                     JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(0);
                     JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
 

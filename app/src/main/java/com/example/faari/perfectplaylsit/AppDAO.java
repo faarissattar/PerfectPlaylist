@@ -8,12 +8,12 @@ import android.arch.persistence.room.Query;
 import java.util.List;
 
 @Dao
-public interface SongDAO {
+public interface AppDAO {
     @Query("SELECT * FROM song")
-    List<Song> getAll();
+    List<Song> getAllSongs();
 
     @Query("SELECT * FROM song WHERE uri IN (:songIds)")
-    List<Song> loadAllByIds(long[] songIds);
+    List<Song> loadAllByIdsSong(long[] songIds);
 
     @Query("SELECT * FROM song WHERE artist LIKE :artist")
     Song findAllByArtist(String artist);
@@ -25,11 +25,26 @@ public interface SongDAO {
     Song findAllByAlbum(String album);
 
     @Query("DELETE FROM song")
-    void deleteAll();
+    void deleteAllSongs();
 
     @Insert
     void insertAll(Song... songs);
 
     @Delete
     void delete(Song song);
+
+    @Query("SELECT * FROM command")
+    List<Command> getAllCommands();
+
+    @Query("DELETE FROM command")
+    void deleteAllCommands();
+
+    @Query("SELECT * FROM command WHERE id IN (:commandIds)")
+    List<Command> loadAllByIdsCommand(long[] commandIds);
+
+    @Insert
+    void insertAll(Command... commands);
+
+    @Delete
+    void delete(Command command);
 }

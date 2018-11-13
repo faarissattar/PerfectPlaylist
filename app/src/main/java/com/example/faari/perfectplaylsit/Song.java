@@ -2,10 +2,9 @@ package com.example.faari.perfectplaylsit;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
-
-import com.spotify.protocol.types.Artist;
 
 @Entity
 public class Song {
@@ -25,15 +24,17 @@ public class Song {
     @ColumnInfo(name = "spotifyId")
     String spotifyId;
 
-    public Song(String arr[], int duration){
+    public Song(int length){
+        this.length = length;
+    }
 
-        this.title = arr[0];
-        this.uri = arr[0];
-        this.spotifyId = arr[0];
-        this.imgUrl = arr[0];
-        this.album = arr[0];
-        this.artist = arr[0];
-        this.length = duration;
+    public void setSongInfo(String songInfo[]){
+        this.title = songInfo[0];
+        this.uri = songInfo[0];
+        this.spotifyId = songInfo[0];
+        this.imgUrl = songInfo[0];
+        this.album = songInfo[0];
+        this.artist = songInfo[0];
     }
 
     String getKey(){
