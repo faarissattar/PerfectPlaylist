@@ -22,19 +22,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
 import com.hound.android.fd.Houndify;
 import com.hound.android.fd.UserIdFactory;
-import com.hound.android.sdk.AsyncTextSearch;
-import com.hound.android.sdk.TextSearchListener;
+import com.hound.android.sdk.TextSearch;
 import com.hound.android.sdk.VoiceSearch;
 import com.hound.android.sdk.VoiceSearchInfo;
 import com.hound.android.sdk.audio.SimpleAudioByteStreamSource;
 import com.hound.android.sdk.util.HoundRequestInfoFactory;
 import com.hound.core.model.sdk.HoundRequestInfo;
-import com.hound.core.model.sdk.HoundResponse;
 import com.hound.core.model.sdk.PartialTranscript;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.NaturalLanguageUnderstanding;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.AnalysisResults;
@@ -92,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
     private SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
-    private AsyncTextSearch asyncTextSearch = null;
+    private TextSearch TextSearch = null;
     private String jsonString = "";
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
@@ -170,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     mvoiceSearch.stopRecording();
                 }
+
                 PlaceholderFragment.setAdapterCommands(commandAdapter);
                 PlaceholderFragment.setAdapterPlaylist(songAdapter);
                 //TODO: Put code here to get results from Houndify and Spotify
@@ -514,25 +512,109 @@ public class MainActivity extends AppCompatActivity {
                 jsonObj = jsonObj.getJSONObject("Disambiguation");
                 JSONArray resultsArray = jsonObj.getJSONArray("ChoiceData");
                 jsonObj = resultsArray.getJSONObject(0);
-                String voiceMessag = jsonObj.getString("Transcription");
+                final String voiceMessag = jsonObj.getString("Transcription");
+                Log.d("OnReponse: ", voiceMessag);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("newTHread: ", "running");
+                        if (TextSearch == null) {
+                            Log.d("text called", "coolio");
+                            TextSearch.Builder builder = new TextSearch.Builder()
+                                    .setRequestInfo(buildRequestInfo())
+                                    .setClientId("n06WnSgzJbML7AuGNJou3Q==")
+                                    .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
+                                    .setQuery(("Songs " + voiceMessag));
+                            TextSearch = builder.build();
+                            try {
+                                final VoiceSearchInfo search = TextSearch.search().getSearchInfo();
 
-                if (asyncTextSearch == null) {
-                    Log.d("text called", "coolio");
-                    AsyncTextSearch.Builder builder = new AsyncTextSearch.Builder()
-                            .setRequestInfo(buildRequestInfo())
-                            .setClientId("n06WnSgzJbML7AuGNJou3Q==")
-                            .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
-                            .setListener(textSearchListener)
-                            .setQuery(("Songs " + voiceMessag));
+                                try {
+                                    String message = ("Response\n\n" + search);
+                                    Log.d("jsonStringy", new JSONObject(search.getContentBody()).toString(4));
 
-                    asyncTextSearch = builder.build();
+                                    largeLog("strangey", search.getContentBody());
 
-                    asyncTextSearch.start();
-                }
+                                    try {
+                                        /**************
+                                         * GETS THE TRANSCRIPTION OF THE VOICE MESSAGE
+                                         **************/
+                                        JSONObject jsonObj = new JSONObject(search.getContentBody());
+                                        jsonObj = jsonObj.getJSONObject("Disambiguation");
+                                        JSONArray resultsArray = jsonObj.getJSONArray("ChoiceData");
+                                        jsonObj = resultsArray.getJSONObject(0);
+                                        voiceMessage = jsonObj.getString("Transcription");
+
+                                        /**********
+                                         * GETS SEEDS FROM THE JSON RESPONSE
+                                         **********/
+
+                                        //TODO The problem is here, the VoiceSearchInfo will not give use the entire JSONResponse
+
+                                        jsonObj = new JSONObject(search.getContentBody());
+                                        JSONArray results = jsonObj.getJSONArray("AllResults");
+                                        for (int k = 0; k < results.length(); k++) {
+                                            JSONObject nativeData = results.getJSONObject(k).getJSONObject("NativeData");
+                                            ArrayList<Command> commands = state.getCommandList();
+                                            commands.add(0, new Command(nativeData.getString("FormattedTranscription")));
+                                            state.setCommandList(commands);
+                                            JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(0);
+                                            JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
+
+                                            int index = -1;
+                                            for (int i = 0; i < thirdParty.length(); i++) {
+
+                                                String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
+                                                if (name.equals("Spotify")) {
+                                                    index = i;
+                                                }
+                                            }
+
+                                            String seed = thirdParty.getJSONObject(index).getJSONArray("Ids").toString();
+
+                                            String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
+                                                    + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
+                                            Log.d("PROGRAM-RESULT", Resultingtrack);
+                                            seeds.add(seed.substring(16, seed.length() - 2));
+                                        }
+                                        String output = "";
+                                        for (String s : seeds) {
+                                            output += s + "\t";
+                                        }
+                                        Log.d("PROGRAM-RESULT", output);
+
+                                        /************
+                                         * SAVES SPOTIFY JSON RESPONSE STRING
+                                         ************/
+
+                                        /***PUT FUNCTION HERE FOR SPOTIFY WEB API**/
+                                        new Thread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                SpotifyWebAPIParser(spotifyApiRequest(voiceMessage, seeds.get(0), 10));
+                                            }
+                                        }).start();
+                                    } catch (JSONException ex) {
+                                        jsonString = "failed";
+                                        Log.d("PROGRAM-RESULT", jsonString);
+                                        ex.printStackTrace();
+                                    } catch (NullPointerException ex) {
+                                        ex.printStackTrace();
+                                    }
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                            catch(com.hound.android.sdk.TextSearch.TextSearchException ts ){
+                                Log.d("ts: ", ts.getMessage());
+                            }
+                        }
+                    }
+                }).start();
                 //statusTextView.setText("Received Response");
             }
             catch(Exception e){
-                Log.d("jException: ", e.getMessage());
+                Log.d("Build failed: ", "fuu");
             }
         }
 
@@ -555,113 +637,6 @@ public class MainActivity extends AppCompatActivity {
             //statusTextView.setText("Aborted");
         }
     }
-
-    /*****************
-     * Text search listener
-     **********************/
-
-    private final TextSearchListener textSearchListener = new TextSearchListener() {
-
-        @Override
-        public void onResponse(final HoundResponse response, final VoiceSearchInfo info) {
-            asyncTextSearch = null;
-
-            // Make sure the request succeeded with OK
-            if (response.getStatus().equals(HoundResponse.Status.OK)) {
-                Log.d("Text search: ", response.toString());
-                try {
-                    String message = "Response\n\n" +
-                            new JSONObject(info.getJsonResponse().toString()).toString();
-                    Log.d("jsonStringy", message);
-
-                    try {
-                        /**************
-                         * GETS THE TRANSCRIPTION OF THE VOICE MESSAGE
-                         **************/
-                        JSONObject jsonObj = new JSONObject(info.getJsonResponse().asText());
-                        jsonObj = jsonObj.getJSONObject("Disambiguation");
-                        JSONArray resultsArray = jsonObj.getJSONArray("ChoiceData");
-                        jsonObj = resultsArray.getJSONObject(0);
-                        voiceMessage = jsonObj.getString("Transcription");
-
-                        /**********
-                         * GETS SEEDS FROM THE JSON RESPONSE
-                         **********/
-
-                        //TODO The problem is here, the VoiceSearchInfo will not give use the entire JSONResponse
-
-                        jsonObj = new JSONObject(info.getJsonResponse().asText());
-                        JSONArray results = jsonObj.getJSONArray("AllResults");
-                        for (int k = 0; k < results.length(); k++) {
-                            JSONObject nativeData = results.getJSONObject(k).getJSONObject("NativeData");
-                            ArrayList<Command> commands = state.getCommandList();
-                            commands.add(0, new Command(nativeData.getString("FormattedTranscription")));
-                            state.setCommandList(commands);
-                            JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(0);
-                            JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
-
-                            int index = -1;
-                            for (int i = 0; i < thirdParty.length(); i++) {
-
-                                String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
-                                if (name.equals("Spotify")) {
-                                    index = i;
-                                }
-                            }
-
-                            String seed = thirdParty.getJSONObject(index).getJSONArray("Ids").toString();
-
-                            String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
-                                    + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
-                            Log.d("PROGRAM-RESULT", Resultingtrack);
-                            seeds.add(seed.substring(16, seed.length() - 2));
-                        }
-                        String output = "";
-                        for (String s : seeds)
-                        {
-                            output += s + "\t";
-                        }
-                        Log.d("PROGRAM-RESULT", output);
-
-                        /************
-                         * SAVES SPOTIFY JSON RESPONSE STRING
-                         ************/
-
-                        /***PUT FUNCTION HERE FOR SPOTIFY WEB API**/
-                        new Thread() {
-                            public void run(){
-                                SpotifyWebAPIParser(spotifyApiRequest(voiceMessage, seeds.get(0), 10));
-                            }
-                        }.start();
-
-                    } catch (JSONException ex){
-                        jsonString = "failed";
-                        Log.d("PROGRAM-RESULT", jsonString);
-                    }
-                }
-                catch (final JSONException ex) {
-                    Log.d("hafsd", "oke");
-                }
-            }
-            else {
-                Log.d("failed text: ", response.toString());
-            }
-
-            Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
-        }
-
-        @Override
-        public void onError(final Exception ex, final VoiceSearchInfo info) {
-            Log.d("onError is here", ex.getMessage());
-            asyncTextSearch = null;
-        }
-
-        @Override
-        public void onAbort(final VoiceSearchInfo info) {
-            Log.d("onAbort is here", "alrighty");
-            asyncTextSearch = null;
-        }
-    };
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -721,6 +696,15 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
 
+        }
+    }
+
+    public static void largeLog(String tag, String content) {
+        if (content.length() > 4000) {
+            Log.d(tag, content.substring(0, 4000));
+            largeLog(tag, content.substring(4000));
+        } else {
+            Log.d(tag, content);
         }
     }
 }
