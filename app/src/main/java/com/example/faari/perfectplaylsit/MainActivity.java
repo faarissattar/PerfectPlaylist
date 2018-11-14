@@ -1,13 +1,8 @@
 package com.example.faari.perfectplaylsit;
 
 import android.Manifest;
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.OnLifecycleEvent;
-import android.arch.persistence.room.Room;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -21,7 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
 import com.hound.android.fd.Houndify;
@@ -30,7 +27,6 @@ import com.hound.android.sdk.VoiceSearch;
 import com.hound.android.sdk.VoiceSearchInfo;
 import com.hound.android.sdk.audio.SimpleAudioByteStreamSource;
 import com.hound.android.sdk.util.HoundRequestInfoFactory;
-import com.hound.core.model.sdk.CommandResult;
 import com.hound.core.model.sdk.HoundRequestInfo;
 import com.hound.core.model.sdk.PartialTranscript;
 import com.spotify.android.appremote.api.ConnectionParams;
@@ -41,9 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -56,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton mbuttonSearch;
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
-    SongAdapter songAdapter;
+    static SongAdapter songAdapter;
     ArrayAdapter<Command> commandAdapter;
     CurrentState state;
 
@@ -268,14 +262,51 @@ public class MainActivity extends AppCompatActivity {
             playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
             getListViewCommands();
             getListViewPlaylist();
+
+            final View songBar = playlistView.findViewById(R.id.inc_song_bar);
+            final ImageView previousBtn = songBar.findViewById(R.id.iv_previous);
+            previousBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // skip to previous
+                }
+            });
+            final ImageView nextBtn = songBar.findViewById(R.id.iv_next);
+            nextBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // skip to next
+                }
+            });
+            final ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
+            playPauseBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (playPauseBtn.getDrawable().getConstantState() == getResources().getDrawable(R.drawable.ic_play_arrow).getConstantState()) {
+                        // pause music
+                        playPauseBtn.setImageResource(R.drawable.ic_pause);
+                    } else {
+                        // play music
+                        playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
+                    }
+                }
+            });
+
             playlistListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Song song = (Song)playlistListView.getItemAtPosition(i);
+                    Song song = (Song) playlistListView.getItemAtPosition(i);
+                    songAdapter.setSelectedIndex(i);
+                    TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
+                    TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
+                    songPlaying.setText(song.getTitle());
+                    artistPlaying.setText(song.getArtist());
+
                     //TODO: Make song play
                     //TODO: Put song info in Now Playing bar
                 }
             });
+
             recentListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -288,6 +319,7 @@ public class MainActivity extends AppCompatActivity {
                     state.setCommandList(commands);
                 }
             });
+
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
                 return recentView;
             } else if(getArguments().getInt(ARG_SECTION_NUMBER)==2){
