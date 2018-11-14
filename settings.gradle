@@ -1,1 +1,1 @@
-include ':app', ':spotify-app-remote'
+include ':app', ':spotify-app-remote', ':auth-lib', ':auth-sample'

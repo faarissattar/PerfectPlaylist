@@ -39,6 +39,10 @@ dependencies {
     api project(':spotify-app-remote')
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'hound.android:hound-sdk:1.4.0'
+    implementation 'com.ibm.watson.developer_cloud:java-sdk:6.6.0'
+    implementation ('com.spotify.android:auth:1.1.0') {
+        exclude group: 'com.android.support'
+    }
 }
 
 repositories {
