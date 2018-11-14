@@ -60,6 +60,8 @@
         android:layout_marginBottom="108dp"
         android:layout_marginEnd="32dp"
         android:layout_marginStart="32dp"
+        android:fadingEdgeLength="32dp"
+        android:requiresFadingEdge="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

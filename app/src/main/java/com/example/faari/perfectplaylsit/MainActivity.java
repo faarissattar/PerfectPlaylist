@@ -2,7 +2,10 @@ package com.example.faari.perfectplaylsit;
 
 import android.Manifest;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -109,7 +112,16 @@ public class MainActivity extends AppCompatActivity {
         mviewPager = findViewById(R.id.container);
         mviewPager.setAdapter(msectionsPagerAdapter);
         songAdapter = new SongAdapter(getApplicationContext(), state.getSongList());
-        commandAdapter = new ArrayAdapter<Command>(getApplicationContext(), android.R.layout.simple_list_item_1, state.getCommandList());
+        commandAdapter =
+                new ArrayAdapter<Command>(getApplicationContext(), android.R.layout.simple_list_item_1, state.getCommandList()) {
+                    @NonNull
+                    @Override
+                    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                        TextView listItem = (TextView) super.getView(position, convertView, parent);
+                        listItem.setTextColor(Color.WHITE);
+                        return listItem;
+                    }
+                };
 
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.RECORD_AUDIO,
