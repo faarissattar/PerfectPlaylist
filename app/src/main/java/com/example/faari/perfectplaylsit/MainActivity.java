@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     private String jsonString = "";
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
-    static SongAdapter songAdapter;
+    SongAdapter songAdapter;
     ArrayAdapter<Command> commandAdapter;
     CurrentState state;
 
@@ -322,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Song song = (Song) playlistListView.getItemAtPosition(i);
-                    songAdapter.setSelectedIndex(i);
+                    //songAdapter.setSelectedIndex(i);
                     mSpotifyAppRemote.getPlayerApi().play(song.getSpotifyId());
                     TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
                     TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
