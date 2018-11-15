@@ -96,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
     static SongAdapter songAdapter;
     ArrayAdapter<Command> commandAdapter;
     CurrentState state;
-    String currentCommand;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,16 +170,14 @@ public class MainActivity extends AppCompatActivity {
 
                 PlaceholderFragment.setAdapterCommands(commandAdapter);
                 PlaceholderFragment.setAdapterPlaylist(songAdapter);
-                //TODO: Put code here to get results from Houndify and Spotify
-                //currentCommand = TRANSCRIPTION GOES HERE;
-                //state.pushCommand(currentCommand);
+                state.pushCommand(new Command(voiceMessage));
                 state.setSongList(songs);
                 commandAdapter.notifyDataSetChanged();
                 songAdapter.notifyDataSetChanged();
                 Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
                 startService(intent1);
                 mviewPager.setCurrentItem(2);
-                //TODO: Make first item in list start playing
+                //TODO: Make first song start playing
                 PlaceholderFragment.setFirstItemToNowPlaying();
             }
         });
@@ -330,7 +327,6 @@ public class MainActivity extends AppCompatActivity {
                     TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
                     songPlaying.setText(song.getTitle());
                     artistPlaying.setText(song.getArtist());
-
                     //TODO: Make song play
                 }
             });
