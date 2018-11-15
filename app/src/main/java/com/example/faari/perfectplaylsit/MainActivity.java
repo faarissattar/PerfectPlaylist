@@ -507,6 +507,13 @@ public class MainActivity extends AppCompatActivity {
             mbuttonSearch.setClickable(true);
             mvoiceSearch = null;
 
+            //TODO implement this commands thing
+            /*
+            ArrayList<Command> commands = state.getCommandList();
+            commands.add(0, new Command(voiceMessage));
+            state.setCommandList(commands);
+            */
+
             try {
                 JSONObject jsonObj = new JSONObject(rawResponse);
                 jsonObj = jsonObj.getJSONObject("Disambiguation");
@@ -539,7 +546,7 @@ public class MainActivity extends AppCompatActivity {
                                         /**************
                                          * GETS THE TRANSCRIPTION OF THE VOICE MESSAGE
                                          **************/
-                                        JSONObject jsonObj = new JSONObject(search.getContentBody());
+                                        JSONObject jsonObj = new JSONObject(search.getJsonResponse().toString());
                                         jsonObj = jsonObj.getJSONObject("Disambiguation");
                                         JSONArray resultsArray = jsonObj.getJSONArray("ChoiceData");
                                         jsonObj = resultsArray.getJSONObject(0);
@@ -551,27 +558,33 @@ public class MainActivity extends AppCompatActivity {
 
                                         //TODO The problem is here, the VoiceSearchInfo will not give use the entire JSONResponse
 
-                                        jsonObj = new JSONObject(search.getContentBody());
+                                        jsonObj = new JSONObject(search.getJsonResponse().toString());
                                         JSONArray results = jsonObj.getJSONArray("AllResults");
+                                        JSONObject nativeData = results.getJSONObject(0).getJSONObject("NativeData");
+
+                                        boolean seed_empty = false;
+
                                         for (int k = 0; k < results.length(); k++) {
-                                            JSONObject nativeData = results.getJSONObject(k).getJSONObject("NativeData");
-                                            ArrayList<Command> commands = state.getCommandList();
-                                            commands.add(0, new Command(nativeData.getString("FormattedTranscription")));
-                                            state.setCommandList(commands);
-                                            JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(0);
+
+                                            JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(k);
                                             JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
 
-                                            int index = -1;
+                                            String seed = "";
                                             for (int i = 0; i < thirdParty.length(); i++) {
-
-                                                String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
-                                                if (name.equals("Spotify")) {
-                                                    index = i;
+                                                try {
+                                                    Log.d("PROGRAM-RESULT", "Trying ID block in for loop");
+                                                    String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
+                                                    if (name.equals("Spotify")) {
+                                                        seed = thirdParty.getJSONObject(i).getJSONArray("Ids").toString();
+                                                        if(seed.equals("[]")){
+                                                            seed_empty = true;
+                                                        }
+                                                    }
+                                                } catch (Exception e) {
+                                                    Log.d("PROGRAM-RESULT", "Catching empty id block");
                                                 }
                                             }
-
-                                            String seed = thirdParty.getJSONObject(index).getJSONArray("Ids").toString();
-
+                                            Log.d("printSeed: ", seed);
                                             String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
                                                     + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
                                             Log.d("PROGRAM-RESULT", Resultingtrack);
