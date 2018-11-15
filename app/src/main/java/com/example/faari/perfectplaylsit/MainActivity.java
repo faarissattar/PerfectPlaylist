@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     static SongAdapter songAdapter;
     ArrayAdapter<Command> commandAdapter;
     CurrentState state;
+    String currentCommand;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,7 +172,8 @@ public class MainActivity extends AppCompatActivity {
                 PlaceholderFragment.setAdapterCommands(commandAdapter);
                 PlaceholderFragment.setAdapterPlaylist(songAdapter);
                 //TODO: Put code here to get results from Houndify and Spotify
-                //state.pushCommand(voiceMessage);
+                //currentCommand = TRANSCRIPTION GOES HERE;
+                //state.pushCommand(currentCommand);
                 state.setSongList(songs);
                 commandAdapter.notifyDataSetChanged();
                 songAdapter.notifyDataSetChanged();
@@ -179,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
                 startService(intent1);
                 mviewPager.setCurrentItem(2);
                 //TODO: Make first item in list start playing
-                //TODO: Put info from first item in list to the Now Playing View
+                PlaceholderFragment.setFirstItemToNowPlaying();
             }
         });
 
@@ -265,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
-        private static View recentView, playlistView;
+        private static View recentView, playlistView, songBar;
         private static ListView recentListView, playlistListView;
 
         public PlaceholderFragment() {}
@@ -290,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
             getListViewCommands();
             getListViewPlaylist();
 
-            final View songBar = playlistView.findViewById(R.id.inc_song_bar);
+            songBar = playlistView.findViewById(R.id.inc_song_bar);
             final ImageView previousBtn = songBar.findViewById(R.id.iv_previous);
             previousBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -330,7 +332,6 @@ public class MainActivity extends AppCompatActivity {
                     artistPlaying.setText(song.getArtist());
 
                     //TODO: Make song play
-                    //TODO: Put song info in Now Playing bar
                 }
             });
 
@@ -377,6 +378,14 @@ public class MainActivity extends AppCompatActivity {
                 getListViewPlaylist();
             }
             playlistListView.setAdapter(songAdapter);
+        }
+
+        public static void setFirstItemToNowPlaying(){
+            Song song = (Song) playlistListView.getItemAtPosition(0);
+            TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
+            TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
+            songPlaying.setText(song.getTitle());
+            artistPlaying.setText(song.getArtist());
         }
     }
 
