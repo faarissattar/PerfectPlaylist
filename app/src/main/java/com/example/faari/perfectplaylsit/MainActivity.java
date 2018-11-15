@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     .build())
             .build();
     final static int REQUEST_CODE = 5744;
-    private SpotifyAppRemote mSpotifyAppRemote;
+    private static SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
     private TextSearch TextSearch = null;
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
                 startService(intent1);
                 mviewPager.setCurrentItem(2);
-                //TODO: Make first song start playing
+                mSpotifyAppRemote.getPlayerApi().play(state.getSongList().get(0).getSpotifyId());
                 PlaceholderFragment.setFirstItemToNowPlaying();
             }
         });
@@ -323,11 +323,11 @@ public class MainActivity extends AppCompatActivity {
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Song song = (Song) playlistListView.getItemAtPosition(i);
                     songAdapter.setSelectedIndex(i);
+                    mSpotifyAppRemote.getPlayerApi().play(song.getSpotifyId());
                     TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
                     TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
                     songPlaying.setText(song.getTitle());
                     artistPlaying.setText(song.getArtist());
-                    //TODO: Make song play
                 }
             });
 
@@ -560,9 +560,6 @@ public class MainActivity extends AppCompatActivity {
                                         JSONArray results = jsonObj.getJSONArray("AllResults");
                                         for (int k = 0; k < results.length(); k++) {
                                             JSONObject nativeData = results.getJSONObject(k).getJSONObject("NativeData");
-                                            ArrayList<Command> commands = state.getCommandList();
-                                            commands.add(0, new Command(nativeData.getString("FormattedTranscription")));
-                                            state.setCommandList(commands);
                                             JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(0);
                                             JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
 
