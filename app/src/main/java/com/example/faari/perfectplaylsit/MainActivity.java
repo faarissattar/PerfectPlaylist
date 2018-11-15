@@ -86,14 +86,14 @@ public class MainActivity extends AppCompatActivity {
                     .build())
             .build();
     final static int REQUEST_CODE = 5744;
-    private static SpotifyAppRemote mSpotifyAppRemote;
+    private SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
     private TextSearch TextSearch = null;
     private String jsonString = "";
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
-    SongAdapter songAdapter;
+    static SongAdapter songAdapter;
     ArrayAdapter<Command> commandAdapter;
     CurrentState state;
 
@@ -170,15 +170,16 @@ public class MainActivity extends AppCompatActivity {
 
                 PlaceholderFragment.setAdapterCommands(commandAdapter);
                 PlaceholderFragment.setAdapterPlaylist(songAdapter);
-                state.pushCommand(new Command(voiceMessage));
+                //TODO: Put code here to get results from Houndify and Spotify
+                //state.pushCommand(voiceMessage);
                 state.setSongList(songs);
                 commandAdapter.notifyDataSetChanged();
                 songAdapter.notifyDataSetChanged();
                 Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
                 startService(intent1);
                 mviewPager.setCurrentItem(2);
-                mSpotifyAppRemote.getPlayerApi().play(state.getSongList().get(0).getSpotifyId());
-                PlaceholderFragment.setFirstItemToNowPlaying();
+                //TODO: Make first item in list start playing
+                //TODO: Put info from first item in list to the Now Playing View
             }
         });
 
@@ -264,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
-        private static View recentView, playlistView, songBar;
+        private static View recentView, playlistView;
         private static ListView recentListView, playlistListView;
 
         public PlaceholderFragment() {}
@@ -289,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
             getListViewCommands();
             getListViewPlaylist();
 
-            songBar = playlistView.findViewById(R.id.inc_song_bar);
+            final View songBar = playlistView.findViewById(R.id.inc_song_bar);
             final ImageView previousBtn = songBar.findViewById(R.id.iv_previous);
             previousBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -322,12 +323,14 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Song song = (Song) playlistListView.getItemAtPosition(i);
-                    //songAdapter.setSelectedIndex(i);
-                    mSpotifyAppRemote.getPlayerApi().play(song.getSpotifyId());
+                    songAdapter.setSelectedIndex(i);
                     TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
                     TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
                     songPlaying.setText(song.getTitle());
                     artistPlaying.setText(song.getArtist());
+
+                    //TODO: Make song play
+                    //TODO: Put song info in Now Playing bar
                 }
             });
 
@@ -374,14 +377,6 @@ public class MainActivity extends AppCompatActivity {
                 getListViewPlaylist();
             }
             playlistListView.setAdapter(songAdapter);
-        }
-
-        public static void setFirstItemToNowPlaying(){
-            Song song = (Song) playlistListView.getItemAtPosition(0);
-            TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
-            TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
-            songPlaying.setText(song.getTitle());
-            artistPlaying.setText(song.getArtist());
         }
     }
 
@@ -556,23 +551,38 @@ public class MainActivity extends AppCompatActivity {
 
                                         //TODO The problem is here, the VoiceSearchInfo will not give use the entire JSONResponse
 
-                                        jsonObj = new JSONObject(search.getContentBody());
+                                        jsonObj = new JSONObject(search.getJsonResponse().toString());
                                         JSONArray results = jsonObj.getJSONArray("AllResults");
+                                        JSONObject nativeData = results.getJSONObject(0).getJSONObject("NativeData");
                                         for (int k = 0; k < results.length(); k++) {
-                                            JSONObject nativeData = results.getJSONObject(k).getJSONObject("NativeData");
-                                            JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(0);
+
+                                            ArrayList<Command> commands = state.getCommandList();
+                                            commands.add(0, new Command(voiceMessage));
+                                            state.setCommandList(commands);
+
+                                            JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(k);
                                             JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
 
-                                            int index = -1;
+                                            String seed = "";
                                             for (int i = 0; i < thirdParty.length(); i++) {
 
-                                                String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
-                                                if (name.equals("Spotify")) {
-                                                    index = i;
+                                                try {
+                                                    Log.d("PROGRAM-RESULT", "Trying ID block in for loop");
+                                                    String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
+                                                    if (name.equals("Spotify")) {
+                                                        seed = thirdParty.getJSONObject(i).getJSONArray("Ids").toString();
+                                                        Log.d("PROGRAM-RESULT", "Current name is : " + name + "on the index :: " + k);
+                                                        if (seed.equals("[]")) {
+                                                            seed = thirdParty.getJSONObject(i).getJSONArray("Ids").toString();
+                                                        }
+                                                    }
+                                                } catch (Exception e) {
+                                                    Log.d("PROGRAM-RESULT", "Catching empty id block");
+                                                    continue;
                                                 }
+
                                             }
 
-                                            String seed = thirdParty.getJSONObject(index).getJSONArray("Ids").toString();
 
                                             String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
                                                     + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
