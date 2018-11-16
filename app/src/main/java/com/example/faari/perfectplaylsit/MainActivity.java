@@ -431,7 +431,7 @@ public class MainActivity extends AppCompatActivity {
         String emotions[] = getEmotionsFromResponse(jsonResponseAnalysis);
         String genre = findGenre(jsonResponseAnalysis);
 
-        return SPOTIFY_URL + "market=US&seed_tracks="+ songUriSeed + "min_energy=0.4&min_popularity=50";
+        return SPOTIFY_URL + "market=US&seed_tracks="+ songUriSeed + "&min_energy=0.4&min_popularity=50";
     }
 
     public String spotifyApiRequest(String voiceMess, String trackURI, int tracks_found) {
@@ -575,6 +575,15 @@ public class MainActivity extends AppCompatActivity {
                                                         seed = thirdParty.getJSONObject(i).getJSONArray("Ids").toString();
                                                         if (!seed.equals("[]")) {
                                                             Log.d("good seeds: ", seed);
+
+                                                            Log.d("printSeed: ", seed);
+                                                            String Resultingtrack = "The program returned the song: " + tracks.getJSONObject(t).getString("TrackName") + " - by:  " + tracks.getJSONObject(t).getString("ArtistName")
+                                                                    + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
+                                                            Log.d("PROGRAM-RESULT", Resultingtrack);
+
+                                                            seed = thirdParty.getJSONObject(i).getString("Ids");
+
+                                                            seeds.add(seed.substring(16, seed.length() - 2));
                                                         } else {
                                                             Log.d("bad seeds: ", seed);
                                                         }
@@ -583,17 +592,6 @@ public class MainActivity extends AppCompatActivity {
                                                     Log.d("PROGRAM-RESULT", "Catching empty id block");
                                                 }
                                             }
-
-                                            /*
-                                            if(!empty_seed) {
-                                                Log.d("printSeed: ", seed);
-                                                String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
-                                                        + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
-                                                Log.d("PROGRAM-RESULT", Resultingtrack);
-                                                seeds.add(seed.substring(16, seed.length() - 2));
-                                                break;
-                                            }
-                                            */
                                         }
 
                                         String output = "";
@@ -610,7 +608,8 @@ public class MainActivity extends AppCompatActivity {
                                         new Thread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                SpotifyWebAPIParser(spotifyApiRequest(voiceMessage, seeds.get(0), 10));
+                                                spotifyApiRequest(voiceMessage, seeds.get(0), 10);
+                                                //SpotifyWebAPIParser(spotifyApiRequest(voiceMessage, seeds.get(0), 10));
                                             }
                                         }).start();
                                     } catch (JSONException ex) {
