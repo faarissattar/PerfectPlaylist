@@ -554,15 +554,17 @@ public class MainActivity extends AppCompatActivity {
                                         jsonObj = new JSONObject(search.getJsonResponse().toString());
                                         JSONArray results = jsonObj.getJSONArray("AllResults");
                                         JSONObject nativeData = results.getJSONObject(0).getJSONObject("NativeData");
-                                        for (int k = 0; k < results.length(); k++) {
 
-                                            ArrayList<Command> commands = state.getCommandList();
-                                            commands.add(0, new Command(voiceMessage));
-                                            state.setCommandList(commands);
 
-                                            JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(k);
-                                            JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
+                                        /*
+                                        ArrayList<Command> commands = state.getCommandList();
+                                        commands.add(0, new Command(voiceMessage));
+                                        state.setCommandList(commands);
+                                        */
+                                        JSONArray tracks = nativeData.getJSONArray("Tracks");
 
+                                        for(int t = 0; t < tracks.length(); t++) {
+                                            JSONArray thirdParty = tracks.getJSONObject(t).getJSONArray("MusicThirdPartyIds");
                                             String seed = "";
                                             for (int i = 0; i < thirdParty.length(); i++) {
 
@@ -571,18 +573,29 @@ public class MainActivity extends AppCompatActivity {
                                                     String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
                                                     if (name.equals("Spotify")) {
                                                         seed = thirdParty.getJSONObject(i).getJSONArray("Ids").toString();
+                                                        if (!seed.equals("[]")) {
+                                                            Log.d("good seeds: ", seed);
+                                                        } else {
+                                                            Log.d("bad seeds: ", seed);
+                                                        }
                                                     }
-                                                    if(seed.equals("[]"));
                                                 } catch (Exception e) {
                                                     Log.d("PROGRAM-RESULT", "Catching empty id block");
                                                 }
                                             }
-                                            Log.d("printSeed: ", seed);
-                                            String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
-                                                    + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
-                                            Log.d("PROGRAM-RESULT", Resultingtrack);
-                                            seeds.add(seed.substring(16, seed.length() - 2));
+
+                                            /*
+                                            if(!empty_seed) {
+                                                Log.d("printSeed: ", seed);
+                                                String Resultingtrack = "The program returned the song: " + track1.getString("TrackName") + " - by:  " + track1.getString("ArtistName")
+                                                        + " with the spotify ID: " + seed + " and extracted is: " + seed.substring(16, seed.length() - 2);
+                                                Log.d("PROGRAM-RESULT", Resultingtrack);
+                                                seeds.add(seed.substring(16, seed.length() - 2));
+                                                break;
+                                            }
+                                            */
                                         }
+
                                         String output = "";
                                         for (String s : seeds) {
                                             output += s + "\t";
