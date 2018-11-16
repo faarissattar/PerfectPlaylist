@@ -507,13 +507,6 @@ public class MainActivity extends AppCompatActivity {
             mbuttonSearch.setClickable(true);
             mvoiceSearch = null;
 
-            //TODO implement this commands thing
-            /*
-            ArrayList<Command> commands = state.getCommandList();
-            commands.add(0, new Command(voiceMessage));
-            state.setCommandList(commands);
-            */
-
             try {
                 JSONObject jsonObj = new JSONObject(rawResponse);
                 jsonObj = jsonObj.getJSONObject("Disambiguation");
@@ -561,25 +554,25 @@ public class MainActivity extends AppCompatActivity {
                                         jsonObj = new JSONObject(search.getJsonResponse().toString());
                                         JSONArray results = jsonObj.getJSONArray("AllResults");
                                         JSONObject nativeData = results.getJSONObject(0).getJSONObject("NativeData");
-
-                                        boolean seed_empty = false;
-
                                         for (int k = 0; k < results.length(); k++) {
+
+                                            ArrayList<Command> commands = state.getCommandList();
+                                            commands.add(0, new Command(voiceMessage));
+                                            state.setCommandList(commands);
 
                                             JSONObject track1 = nativeData.getJSONArray("Tracks").getJSONObject(k);
                                             JSONArray thirdParty = track1.getJSONArray("MusicThirdPartyIds");
 
                                             String seed = "";
                                             for (int i = 0; i < thirdParty.length(); i++) {
+
                                                 try {
                                                     Log.d("PROGRAM-RESULT", "Trying ID block in for loop");
                                                     String name = thirdParty.getJSONObject(i).getJSONObject("MusicThirdParty").getString("Name");
                                                     if (name.equals("Spotify")) {
                                                         seed = thirdParty.getJSONObject(i).getJSONArray("Ids").toString();
-                                                        if(seed.equals("[]")){
-                                                            seed_empty = true;
-                                                        }
                                                     }
+                                                    if(seed.equals("[]"));
                                                 } catch (Exception e) {
                                                     Log.d("PROGRAM-RESULT", "Catching empty id block");
                                                 }
