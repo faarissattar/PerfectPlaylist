@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     .build())
             .build();
     final static int REQUEST_CODE = 5744;
-    private SpotifyAppRemote mSpotifyAppRemote;
+    private static SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
     private TextSearch TextSearch = null;
@@ -295,14 +295,22 @@ public class MainActivity extends AppCompatActivity {
             previousBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // skip to previous
+                    /*
+                        mSpotifyAppRemote.getPlayerApi().skipPrevious();
+                        or
+                        mSpotifyAppRemote.getPlayerApi().play("<song-uri>"); get uri from ArrayList
+                    */
                 }
             });
             final ImageView nextBtn = songBar.findViewById(R.id.iv_next);
             nextBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // skip to next
+                    /*
+                        mSpotifyAppRemote.getPlayerApi().skipNext();
+                        or
+                        mSpotifyAppRemote.getPlayerApi().play("<song-uri>"); get uri from ArrayList
+                    */
                 }
             });
             final ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
@@ -310,10 +318,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     if (playPauseBtn.getDrawable().getConstantState() == getResources().getDrawable(R.drawable.ic_play_arrow).getConstantState()) {
-                        // pause music
+                        mSpotifyAppRemote.getPlayerApi().resume();
                         playPauseBtn.setImageResource(R.drawable.ic_pause);
                     } else {
-                        // play music
+                        mSpotifyAppRemote.getPlayerApi().pause();
                         playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
                     }
                 }
@@ -328,9 +336,8 @@ public class MainActivity extends AppCompatActivity {
                     TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
                     songPlaying.setText(song.getTitle());
                     artistPlaying.setText(song.getArtist());
-
-                    //TODO: Make song play
-                    //TODO: Put song info in Now Playing bar
+                    mSpotifyAppRemote.getPlayerApi().play(song.getKey());
+                    playPauseBtn.setImageResource(R.drawable.ic_pause);
                 }
             });
 
