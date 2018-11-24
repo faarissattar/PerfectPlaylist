@@ -21,7 +21,6 @@
         android:id="@+id/iv_next_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="24dp"
         android:layout_marginStart="24dp"
         app:layout_constraintStart_toEndOf="@+id/iv_play_btn"
         app:layout_constraintTop_toTopOf="@+id/iv_play_btn"
@@ -32,7 +31,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
         app:layout_constraintEnd_toStartOf="@+id/iv_play_btn"
         app:layout_constraintTop_toTopOf="@+id/iv_play_btn"
         app:srcCompat="@drawable/ic_skip_previous" />
