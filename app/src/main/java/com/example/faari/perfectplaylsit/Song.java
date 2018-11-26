@@ -2,7 +2,6 @@ package com.example.faari.perfectplaylsit;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
@@ -76,4 +75,10 @@ public class Song {
     public void setLength(int length) {
         this.length = length;
     }
+
+    public void setSpotifyId(String id){
+        spotifyId = id;
+    }
+
+
 }
