@@ -3,6 +3,7 @@ package com.example.faari.perfectplaylsit;
 import android.Manifest;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -49,6 +50,7 @@ import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -74,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String SPOTIFY_URL = "https://api.spotify.com/v1/recommendations?";
     private static String spotApiToken = "";
     private ArrayList<String> seeds = new ArrayList<>();
-    private ArrayList<Song> songs = new ArrayList<>();
+    private static ArrayList<Song> songs = new ArrayList<>();
     private String voiceMessage = "";
     //	new instance of NLU
     private final NaturalLanguageUnderstanding botNlu = new NaturalLanguageUnderstanding("2017-02-27", IBM_USERNAME, IBM_PASSWORD);
@@ -86,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                     .build())
             .build();
     final static int REQUEST_CODE = 5744;
-    private SpotifyAppRemote mSpotifyAppRemote;
+    private static SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
     private TextSearch TextSearch = null;
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
     static SongAdapter songAdapter;
-    ArrayAdapter<Command> commandAdapter;
+    static ArrayAdapter<Command> commandAdapter;
     CurrentState state;
 
     @Override
@@ -178,8 +180,17 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
                 startService(intent1);
                 mviewPager.setCurrentItem(2);
-                //TODO: Make first item in list start playing
-                //TODO: Put info from first item in list to the Now Playing View
+                mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
+                for(int i = 1; i<songs.size(); i++){
+                    mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+                }
+                //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
+                TextView songName = findViewById(R.id.tv_song_playing);
+                songName.setText(songs.get(0).getTitle());
+                TextView artistName = findViewById(R.id.tv_artist_playing);
+                artistName.setText(songs.get(0).getArtist());
+                ImageView albumImage = findViewById(R.id.iv_album_cover);
+                //TODO: Set image for album cover here
             }
         });
 
@@ -295,14 +306,22 @@ public class MainActivity extends AppCompatActivity {
             previousBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // skip to previous
+                    /*
+                        mSpotifyAppRemote.getPlayerApi().skipPrevious();
+                        or
+                        mSpotifyAppRemote.getPlayerApi().play("<song-uri>"); get uri from ArrayList
+                    */
                 }
             });
             final ImageView nextBtn = songBar.findViewById(R.id.iv_next);
             nextBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // skip to next
+                    /*
+                        mSpotifyAppRemote.getPlayerApi().skipNext();
+                        or
+                        mSpotifyAppRemote.getPlayerApi().play("<song-uri>"); get uri from ArrayList
+                    */
                 }
             });
             final ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
@@ -310,10 +329,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     if (playPauseBtn.getDrawable().getConstantState() == getResources().getDrawable(R.drawable.ic_play_arrow).getConstantState()) {
-                        // pause music
+                        mSpotifyAppRemote.getPlayerApi().resume();
                         playPauseBtn.setImageResource(R.drawable.ic_pause);
                     } else {
-                        // play music
+                        mSpotifyAppRemote.getPlayerApi().pause();
                         playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
                     }
                 }
@@ -328,9 +347,12 @@ public class MainActivity extends AppCompatActivity {
                     TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
                     songPlaying.setText(song.getTitle());
                     artistPlaying.setText(song.getArtist());
-
-                    //TODO: Make song play
-                    //TODO: Put song info in Now Playing bar
+                    mSpotifyAppRemote.getPlayerApi().play(song.getKey());
+                    for(int j = i+1; j<songs.size(); j++){
+                        mSpotifyAppRemote.getPlayerApi().queue(songs.get(j).getKey());
+                    }
+                    playPauseBtn.setImageResource(R.drawable.ic_pause);
+                    //TODO: Set album cover
                 }
             });
 

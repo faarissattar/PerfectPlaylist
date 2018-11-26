@@ -41,7 +41,7 @@ public class SongAdapter extends ArrayAdapter<Song> {
         Song currentSong = mSongList.get(position);
         songName.setText(currentSong.getTitle());
         artistAndAlbum.setText(currentSong.getArtist() + " \u2022 " + currentSong.getAlbum());
-        songLength.setText(currentSong.getLength() + "");
+        songLength.setText(formatLength(currentSong.getLength()));
 
         if (mSelectedIndex != -1 &&  position == mSelectedIndex) {
             songName.setTextColor(Color.parseColor("#2196F3"));
@@ -56,6 +56,13 @@ public class SongAdapter extends ArrayAdapter<Song> {
         for(int i = 0; i < mSongList.size(); i++){
             mSongList.remove(i);
         }
+    }
+
+    private String formatLength(int millis) {
+        int minutes = (millis / 1000) / 60;
+        int seconds = (millis / 1000) % 60;
+
+        return minutes + ":" + seconds;
     }
 }
 
