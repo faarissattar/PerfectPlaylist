@@ -3,7 +3,6 @@ package com.example.faari.perfectplaylsit;
 import android.Manifest;
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -50,7 +49,6 @@ import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -74,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String IBM_USERNAME = "6ab5486c-37e8-4a6e-8281-0ade7278857b";
     private static final String IBM_PASSWORD = "Bkjugo5VkhOD";
     private static final String SPOTIFY_URL = "https://api.spotify.com/v1/recommendations?";
+    private static final String SPOTIFY_URL_TRACK = "https://api.spotify.com/v1/tracks/";
     private static String spotApiToken = "";
     private ArrayList<String> seeds = new ArrayList<>();
     private static ArrayList<Song> songs = new ArrayList<>();
@@ -170,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
                     mvoiceSearch.stopRecording();
                 }
 
+                /*
                 PlaceholderFragment.setAdapterCommands(commandAdapter);
                 PlaceholderFragment.setAdapterPlaylist(songAdapter);
                 //TODO: Put code here to get results from Houndify and Spotify
@@ -191,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
                 artistName.setText(songs.get(0).getArtist());
                 ImageView albumImage = findViewById(R.id.iv_album_cover);
                 //TODO: Set image for album cover here
+                */
             }
         });
 
@@ -452,8 +453,61 @@ public class MainActivity extends AppCompatActivity {
         String jsonResponseAnalysis = analyzeResponse(response);
         String emotions[] = getEmotionsFromResponse(jsonResponseAnalysis);
         String genre = findGenre(jsonResponseAnalysis);
+        String artistUriSeed = "11dFghVXANMlKmJXsNCbNl";
 
-        return SPOTIFY_URL + "market=US&seed_tracks="+ songUriSeed + "&min_energy=0.4&min_popularity=50";
+        HttpURLConnection api_get;
+        StringBuffer buffResponse = new StringBuffer();
+
+        try {
+            URL url = new URL(SPOTIFY_URL_TRACK + songUriSeed + "?market=US");
+            //	creates a URL connection, are the url that we built
+            api_get = (HttpURLConnection) url.openConnection();
+
+            //	sets the url connection to a GET request\
+            api_get.setRequestMethod("GET");
+            //api_get.setRequestProperty("User-Agent", "perfectPlaylist");
+            api_get.setRequestProperty("Accept", "application/json");
+            api_get.setRequestProperty("Content-Type", "application/json");
+            api_get.setRequestProperty("Authorization", ("Bearer "+spotApiToken));
+
+
+            int responseCode = api_get.getResponseCode();
+            Log.d("sending","\nSending 'GET' request to URL : " + url);
+            Log.d( "Response Code : ", ""+responseCode);
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(api_get.getInputStream()));
+            String inputLine;
+            buffResponse = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                buffResponse.append(inputLine);
+            }
+
+            in.close();
+
+            Log.d("jsonResponse: ", buffResponse.toString());
+        }
+        catch(MalformedURLException e){
+            Log.d("malformed", e.getMessage());
+        }
+        catch(IOException e){
+            Log.d("ioEx", e.getMessage());
+        }
+
+        try {
+            JSONObject jObject = new JSONObject(buffResponse.toString());
+            jObject = jObject.getJSONObject("album");
+            JSONArray jArray = jObject.getJSONArray("artists");
+            jObject = jArray.getJSONObject(0);
+            artistUriSeed = jObject.getString("uri");
+            artistUriSeed = artistUriSeed.substring(15, artistUriSeed.length());
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return SPOTIFY_URL + "limit=" + tracksFound + "&market=US&seed_artists=" + artistUriSeed + "&seed_tracks=" + songUriSeed + "&min_energy=0.4&min_popularity=50";
     }
 
     public String spotifyApiRequest(String voiceMess, String trackURI, int tracks_found) {
@@ -528,7 +582,6 @@ public class MainActivity extends AppCompatActivity {
         public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
             mbuttonSearch.setClickable(true);
             mvoiceSearch = null;
-
             try {
                 JSONObject jsonObj = new JSONObject(rawResponse);
                 jsonObj = jsonObj.getJSONObject("Disambiguation");
@@ -630,7 +683,8 @@ public class MainActivity extends AppCompatActivity {
                                         new Thread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                spotifyApiRequest(voiceMessage, seeds.get(0), 10);
+                                                String recommendations_json = spotifyApiRequest(voiceMessage, seeds.get(0), 10);
+
                                                 //SpotifyWebAPIParser(spotifyApiRequest(voiceMessage, seeds.get(0), 10));
                                             }
                                         }).start();
@@ -719,23 +773,29 @@ public class MainActivity extends AppCompatActivity {
             String[] arr = new String[6];
             JSONObject temp = null;
             for (int i = 0; i < tracksObj.length(); i++) {
+                Song song = new Song(Integer.parseInt(temp.getString("duration_ms")));
+
                 temp = tracksObj.getJSONObject(i);
-
-                arr[0] = temp.getString("name");
-                arr[2] = temp.getString("uri");
+                song.setTitle(temp.getString("name"));
+                Log.d("name: ", arr[0]);
+                song.setKey(temp.getString("uri"));
+                Log.d("uri: ", arr[0]);
                 arr[3] = temp.getString("id");
+                Log.d("id: ", arr[0]);
                 arr[4] = temp.getJSONObject("album").getJSONArray("images").getJSONObject(temp.getJSONObject("album").getJSONArray("images").length() - 1).getString("url");
+                Log.d("img: ", arr[0]);
                 arr[5] = temp.getJSONObject("album").getString("name");
+                Log.d("name: ", arr[0]);
                 arr[6] = temp.getJSONArray("artists").getJSONObject(0).getString("name");
-                duration = Integer.parseInt(temp.getString("duration_ms"));
+                Log.d("name: ", arr[0]);
 
-                Song song = new Song(duration);
                 song.setSongInfo(arr);
                 songs.add(song);
                 state.setSongList(songs);
             }
-        } catch (Exception e) {
 
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
