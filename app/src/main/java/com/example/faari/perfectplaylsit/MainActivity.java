@@ -664,27 +664,6 @@ public class MainActivity extends AppCompatActivity {
                                                 String recommendations_json = spotifyApiRequest(voiceMessage, seeds.get(0), 10);
 
                                                 //SpotifyWebAPIParser(spotifyApiRequest(voiceMessage, seeds.get(0), 10));
-                                                PlaceholderFragment.setAdapterCommands(commandAdapter);
-                                                PlaceholderFragment.setAdapterPlaylist(songAdapter);
-                                                //TODO: Put code here to get results from Houndify and Spotify
-                                                //state.pushCommand(voiceMessage);
-                                                state.setSongList(songs);
-                                                commandAdapter.notifyDataSetChanged();
-                                                songAdapter.notifyDataSetChanged();
-                                                Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
-                                                startService(intent1);
-                                                mviewPager.setCurrentItem(2);
-                                                mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
-                                                for(int i = 1; i<songs.size(); i++){
-                                                    mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
-                                                }
-                                                //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
-                                                TextView songName = findViewById(R.id.tv_song_playing);
-                                                songName.setText(songs.get(0).getTitle());
-                                                TextView artistName = findViewById(R.id.tv_artist_playing);
-                                                artistName.setText(songs.get(0).getArtist());
-                                                ImageView albumImage = findViewById(R.id.iv_album_cover);
-                                                //TODO: Set image for album cover here
                                             }
                                         }).start();
                                     } catch (JSONException ex) {
@@ -775,21 +754,26 @@ public class MainActivity extends AppCompatActivity {
                 Song song = new Song(Integer.parseInt(temp.getString("duration_ms")));
 
                 temp = tracksObj.getJSONObject(i);
-                song.setTitle(temp.getString("name"));
-                Log.d("name: ", arr[0]);
-                song.setKey(temp.getString("uri"));
-                Log.d("uri: ", arr[0]);
-                arr[3] = temp.getString("id");
-                Log.d("id: ", arr[0]);
-                arr[4] = temp.getJSONObject("album").getJSONArray("images").getJSONObject(temp.getJSONObject("album").getJSONArray("images").length() - 1).getString("url");
-                Log.d("img: ", arr[0]);
-                arr[5] = temp.getJSONObject("album").getString("name");
-                Log.d("name: ", arr[0]);
-                arr[6] = temp.getJSONArray("artists").getJSONObject(0).getString("name");
-                Log.d("name: ", arr[0]);
 
-                //Song song = new Song(duration);
-                song.setSongInfo(arr);
+                song.setTitle(temp.getString("name"));
+                Log.d("name: ", song.getTitle());
+
+                song.setKey(temp.getString("uri"));
+                Log.d("uri: ", song.getKey());
+
+                song.setSpotifyId(temp.getString("id"));
+                Log.d("id: ", arr[0]);
+
+                song.setImgUrl(temp.getJSONObject("album").getJSONArray("images").getJSONObject(temp.getJSONObject("album").getJSONArray("images").length() - 1).getString("url"));
+                Log.d("img: ", song.getImgUrl());
+
+                song.setAlbum(temp.getJSONObject("album").getString("name"));
+                Log.d("name: ", song.getAlbum());
+
+                song.setArtist(temp.getJSONArray("artists").getJSONObject(0).getString("name"));
+                Log.d("name: ", song.getArtist());
+
+//               song.setSongInfo(arr);
                 songs.add(song);
                 state.setSongList(songs);
             }

@@ -29,11 +29,19 @@ public class Song {
 
     public void setSongInfo(String songInfo[]){
         this.title = songInfo[0];
-        this.uri = songInfo[0];
-        this.spotifyId = songInfo[0];
-        this.imgUrl = songInfo[0];
-        this.album = songInfo[0];
-        this.artist = songInfo[0];
+        this.uri = songInfo[1];
+        this.spotifyId = songInfo[2];
+        this.imgUrl = songInfo[3];
+        this.album = songInfo[4];
+        this.artist = songInfo[5];
+    }
+
+    String getImgUrl(){
+        return imgUrl;
+    }
+
+    void setImgUrl(String imgUrl){
+        this.imgUrl = imgUrl;
     }
 
     String getKey(){
