@@ -774,22 +774,27 @@ public class MainActivity extends AppCompatActivity {
             JSONObject temp = null;
             for (int i = 0; i < tracksObj.length(); i++) {
                 Song song = new Song(Integer.parseInt(temp.getString("duration_ms")));
-
                 temp = tracksObj.getJSONObject(i);
-                song.setTitle(temp.getString("name"));
-                Log.d("name: ", arr[0]);
-                song.setKey(temp.getString("uri"));
-                Log.d("uri: ", arr[0]);
-                arr[3] = temp.getString("id");
-                Log.d("id: ", arr[0]);
-                arr[4] = temp.getJSONObject("album").getJSONArray("images").getJSONObject(temp.getJSONObject("album").getJSONArray("images").length() - 1).getString("url");
-                Log.d("img: ", arr[0]);
-                arr[5] = temp.getJSONObject("album").getString("name");
-                Log.d("name: ", arr[0]);
-                arr[6] = temp.getJSONArray("artists").getJSONObject(0).getString("name");
-                Log.d("name: ", arr[0]);
 
-                song.setSongInfo(arr);
+                song.setTitle(temp.getString("name"));
+                Log.d("name: ", song.getTitle());
+
+                song.setKey(temp.getString("uri"));
+                Log.d("uri: ", song.getKey());
+
+                song.setSpotifyId(temp.getString("id"));
+                Log.d("id: ", arr[0]);
+
+                song.setImgUrl(temp.getJSONObject("album").getJSONArray("images").getJSONObject(temp.getJSONObject("album").getJSONArray("images").length() - 1).getString("url"));
+                Log.d("img: ", song.getImgUrl());
+
+                song.setAlbum(temp.getJSONObject("album").getString("name"));
+                Log.d("name: ", song.getAlbum());
+
+                song.setArtist(temp.getJSONArray("artists").getJSONObject(0).getString("name"));
+                Log.d("name: ", song.getArtist());
+
+//                song.setSongInfo(arr);
                 songs.add(song);
                 state.setSongList(songs);
             }
