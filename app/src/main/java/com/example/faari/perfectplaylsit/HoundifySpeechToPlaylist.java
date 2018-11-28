@@ -1,53 +1,52 @@
 package com.example.faari.perfectplaylsit;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.hound.android.fd.UserIdFactory;
 import com.hound.android.sdk.TextSearch;
 import com.hound.android.sdk.VoiceSearchInfo;
-import com.hound.android.sdk.util.HoundRequestInfoFactory;
 import com.hound.core.model.sdk.HoundRequestInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.UUID;
+import java.util.ArrayList;
 
 class HoundifySpeechToPlaylistTask extends AsyncTask {
     private MainActivity activity;
+    private ArrayList<String> seeds = new ArrayList<>();
+    private TextSearch textSearch = null;
+    private String voiceMessag;
+    private HoundRequestInfo requestInfo;
 
-    public HoundifySpeechToPlaylistTask(MainActivity activity) {
+    public HoundifySpeechToPlaylistTask(MainActivity activity, String voiceMessag, HoundRequestInfo requestInfo) {
         this.activity = activity;
+        this.voiceMessag = voiceMessag;
+        this.requestInfo = requestInfo;
     }
 
     @Override
     protected Object doInBackground(Object[] objects) {
         try {
-            JSONObject jsonObj = new JSONObject(rawResponse);
-            jsonObj = jsonObj.getJSONObject("Disambiguation");
-            JSONArray resultsArray = jsonObj.getJSONArray("ChoiceData");
-            jsonObj = resultsArray.getJSONObject(0);
-            final String voiceMessag = jsonObj.getString("Transcription");
-            Log.d("newTHread: ", "running");
-            if (TextSearch == null) {
-                Log.d("text called", "coolio");
+            if (textSearch == null) {
                 TextSearch.Builder builder = new TextSearch.Builder()
-                        .setRequestInfo(buildRequestInfo())
+                        .setRequestInfo(requestInfo)
                         .setClientId("n06WnSgzJbML7AuGNJou3Q==")
-                        .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBz8Ds-qH9CoHNpdEG-oyDwVbmw==")
+                        .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
                         .setQuery(("Songs " + voiceMessag));
-                TextSearch = builder.build();
+                Log.d("before build", "coolio");
+
+                textSearch = builder.build();
+
                 try {
-                    final VoiceSearchInfo search = TextSearch.search().getSearchInfo();
+                    Log.d("text called", "coolio");
+                    final VoiceSearchInfo search = textSearch.search().getSearchInfo();
+                    Log.d("after search info", "coolio");
 
                     try {
                         String message = ("Response\n\n" + search);
                         Log.d("jsonStringy", new JSONObject(search.getContentBody()).toString(4));
-
-                        largeLog("strangey", search.getContentBody());
 
                         try {
                             /**************
@@ -55,9 +54,9 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
                              **************/
                             JSONObject jsonObj = new JSONObject(search.getJsonResponse().toString());
                             jsonObj = jsonObj.getJSONObject("Disambiguation");
-                            JSONArray resultsArray = jsonObj.getJSONArray("ChoiceData");
-                            jsonObj = resultsArray.getJSONObject(0);
-                            voiceMessage = jsonObj.getString("Transcription");
+                            JSONArray resultsArrays = jsonObj.getJSONArray("ChoiceData");
+                            jsonObj = resultsArrays.getJSONObject(0);
+                            final String voiceMessage = jsonObj.getString("Transcription");
 
                             /**********
                              * GETS SEEDS FROM THE JSON RESPONSE
@@ -119,17 +118,17 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
                              ************/
 
                             /***PUT FUNCTION HERE FOR SPOTIFY WEB API**/
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    String recommendations_json = spotifyApiRequest(voiceMessage, seeds.get(0), 10);
 
-                                    //SpotifyWebAPIParser(spotifyApiRequest(voiceMessage, seeds.get(0), 10));
-                                }
-                            }).start();
+//                            new Thread(new Runnable() {
+//                                @Override
+//                                public void run() {
+//
+                                    //String recommendations_json = activity.spotifyApiRequest(voiceMessage, seeds.get(0), 10);
+                                    activity.SpotifyWebAPIParser(activity.spotifyApiRequest(voiceMessage, seeds.get(0), 10));
+
+//                                }
+//                            }).start();
                         } catch (JSONException ex) {
-                            jsonString = "failed";
-                            Log.d("PROGRAM-RESULT", jsonString);
                             ex.printStackTrace();
                         } catch (NullPointerException ex) {
                             ex.printStackTrace();
@@ -143,11 +142,13 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
             }
         } catch (Exception e) {
             Log.d("Build failed: ", "fuu");
+            e.printStackTrace();
         }
         return null;
     }
 
     protected void onPostExecute(Long result) {
+        Log.d("api parser method post exec", "got here");
         activity.setFirstSong();
     }
 }
