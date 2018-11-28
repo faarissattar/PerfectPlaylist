@@ -25,14 +25,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
+import com.hound.android.fd.HoundSearchResult;
 import com.hound.android.fd.Houndify;
 import com.hound.android.fd.UserIdFactory;
-import com.hound.android.sdk.VoiceSearch;
-import com.hound.android.sdk.VoiceSearchInfo;
-import com.hound.android.sdk.audio.SimpleAudioByteStreamSource;
 import com.hound.android.sdk.util.HoundRequestInfoFactory;
 import com.hound.core.model.sdk.HoundRequestInfo;
-import com.hound.core.model.sdk.PartialTranscript;
+import com.hound.core.model.sdk.HoundResponse;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.NaturalLanguageUnderstanding;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.AnalysisResults;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.AnalyzeOptions;
@@ -67,20 +65,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String CLIENT_ID = "ffe427ae0c784377ab9f5afc7bf47a15";
     private static final String CLIENT_SECRET_ID = "dbf89482e2974892bba6f183b6f05fb9";
     private static final String REDIRECT_URI = "https://example.com/redirect/";
-    /*
-    private static SpotifyApi spotifyApi;
-    private static final ClientCredentialsRequest clientCredentialsRequest = spotifyApi.clientCredentials()
-            .build();
-            */
     private static final String IBM_USERNAME = "6ab5486c-37e8-4a6e-8281-0ade7278857b";
     private static final String IBM_PASSWORD = "Bkjugo5VkhOD";
     private static final String SPOTIFY_URL = "https://api.spotify.com/v1/recommendations?";
     private static final String SPOTIFY_URL_TRACK = "https://api.spotify.com/v1/tracks/";
     private static String spotApiToken = "";
-    private ArrayList<String> seeds = new ArrayList<>();
     public static ArrayList<Song> songs = new ArrayList<>();
     public static ArrayList<Command> commands = new ArrayList<>();
-    private String voiceMessage = "";
     //	new instance of NLU
     private final NaturalLanguageUnderstanding botNlu = new NaturalLanguageUnderstanding("2017-02-27", IBM_USERNAME, IBM_PASSWORD);
     //	final to hold our NLU features object
@@ -90,11 +81,10 @@ public class MainActivity extends AppCompatActivity {
             .entities(new EntitiesOptions.Builder()
                     .build())
             .build();
-    final static int REQUEST_CODE = 5744;
+    final static int REQUEST_CODE_HOUND = 5744;
+    final static int REQUEST_CODE_SPOT = 5400;
     private static SpotifyAppRemote mSpotifyAppRemote;
-    private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
-    private String jsonString = "";
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
     static SongAdapter songAdapter;
@@ -132,8 +122,8 @@ public class MainActivity extends AppCompatActivity {
         }, 0);
 
         final Houndify houndify = Houndify.get(this);
-        houndify.setClientId("Bu-exntOPXXobJkeWy7mLQ==");
-        houndify.setClientKey("zEEhEDttMVW5chVm-9JErBOUIlucENjyRT-AO3DPqY6mRCpw2znKerG5b202N5VCELSErvOiAyx2B35vCRnNWg==");
+        houndify.setClientId("Vy_CyVmRNJoW0VLpWcmBGQ==");
+        houndify.setClientKey("2ATZbp6QpSGEoBDXGWSfC63vznJoJh9riR2oQaznDamJmdIW-us0wezYgz_J7ec_wS6M3X7sfTsjENxAcDl5og==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
 
         /***************
@@ -144,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
         //builder.setScopes(new String[]{"streaming"});
         AuthenticationRequest request = builder.build();
-        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+        AuthenticationClient.openLoginActivity(this, REQUEST_CODE_SPOT, request);
 
         ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
                 .setRedirectUri(REDIRECT_URI)
@@ -254,38 +244,37 @@ public class MainActivity extends AppCompatActivity {
         mbuttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
-                if (mvoiceSearch == null) {
-                    //startVoiceSearch(view);
-                    mvoiceSearch = new VoiceSearch.Builder()
-                            .setRequestInfo(buildRequestInfo())
-                            .setClientId("Bu-exntOPXXobJkeWy7mLQ==")
-                            .setClientKey("zEEhEDttMVW5chVm-9JErBOUIlucENjyRT-AO3DPqY6mRCpw2znKerG5b202N5VCELSErvOiAyx2B35vCRnNWg==")
-                            .setListener(voiceListener)
-                            .setAudioSource(new SimpleAudioByteStreamSource())
-                            .build();
-                    mvoiceSearch.start();
-                }
-                else {
-                    mvoiceSearch.stopRecording();
-                }
+                Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE_HOUND);
             }
         });
     }
 
-    /*
-     *   ON SPOTIFY AUTHENTICATION RESULT
-     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        //if (requestCode == REQUEST_CODE) {
-        //final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, data);
-        //final HoundResponse houndResponse = result.getResponse();
-        //}
+        if (requestCode == REQUEST_CODE_HOUND) {
+            final HoundSearchResult result = Houndify.get(this).fromActivityResult(resultCode, intent);
+            final HoundResponse houndResponse = result.getResponse();
+
+            try {
+                Log.d("hound response", result.getSearchInfo().getJsonResponse().toString());
+                JSONObject jsonOb = new JSONObject(result.getSearchInfo().getJsonResponse().toString());
+                jsonOb = jsonOb.getJSONObject("Disambiguation");
+                JSONArray resultsArra = jsonOb.getJSONArray("ChoiceData");
+                jsonOb = resultsArra.getJSONObject(0);
+                final String voiceMessag = jsonOb.getString("Transcription");
+                HoundRequestInfo requestInfo = buildRequestInfo();
+
+                new HoundifySpeechToPlaylistTask(MainActivity.this, voiceMessag, requestInfo).execute();
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+
         super.onActivityResult(requestCode, resultCode, intent);
 
         // Check if result comes from the correct activity
-        if (requestCode == REQUEST_CODE) {
+        if (requestCode == REQUEST_CODE_SPOT) {
             AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
 
             switch (response.getType()) {
@@ -308,12 +297,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-    /*
-    private void connected(){
-        mSpotifyAppRemote.getPlayerApi().play("spotify:user:spotify:playlist:37i9dQZF1DX2sUQwD7tbmL");
-    }
-    */
 
     private HoundRequestInfo buildRequestInfo() {
         final HoundRequestInfo requestInfo = HoundRequestInfoFactory.getDefault(this);
@@ -603,72 +586,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d("ioEx", e.getMessage());
         }
         return response.toString();
-    }
-
-
-    private final Listener voiceListener = new Listener();
-
-    //------------------------------------------------------------------------------------------------------------
-    private class Listener implements VoiceSearch.RawResponseListener {
-
-        @Override
-        public void onTranscriptionUpdate(final PartialTranscript transcript) {
-            switch (mvoiceSearch.getState()) {
-                case STATE_STARTED:
-                    //statusTextView.setText("Listening...");
-                    break;
-
-                case STATE_SEARCHING:
-                    //statusTextView.setText("Receiving...");
-                    break;
-
-                default:
-                    //statusTextView.setText("Unknown");
-                    break;
-            }
-
-            //contentTextView.setText("Transcription:\n" + transcript.getPartialTranscript());
-        }
-
-        @Override
-        public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
-            mbuttonSearch.setClickable(true);
-            mvoiceSearch = null;
-            try {
-                JSONObject jsonOb = new JSONObject(rawResponse);
-                jsonOb = jsonOb.getJSONObject("Disambiguation");
-                JSONArray resultsArra = jsonOb.getJSONArray("ChoiceData");
-                jsonOb = resultsArra.getJSONObject(0);
-                final String voiceMessag = jsonOb.getString("Transcription");
-                HoundRequestInfo requestInfo = buildRequestInfo();
-
-                new HoundifySpeechToPlaylistTask(MainActivity.this, voiceMessag, requestInfo).execute();
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
-
-            Log.d("newTHread: ", "running");
-        }
-
-        @Override
-        public void onError(final Exception ex, final VoiceSearchInfo info) {
-            mvoiceSearch = null;
-
-            //statusTextView.setText("Something went wrong");
-            //contentTextView.setText(ex.toString());
-        }
-
-        @Override
-        public void onRecordingStopped() {
-            //statusTextView.setText("Receiving...");
-        }
-
-        @Override
-        public void onAbort(final VoiceSearchInfo info) {
-            mvoiceSearch = null;
-            //statusTextView.setText("Aborted");
-        }
     }
 
     /**
