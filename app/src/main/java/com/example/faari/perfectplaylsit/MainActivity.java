@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
     static SongAdapter songAdapter;
     static ArrayAdapter<Command> commandAdapter;
     CurrentState state;
+    Thread t;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,7 +175,32 @@ public class MainActivity extends AppCompatActivity {
                     mvoiceSearch.stopRecording();
                 }
 
-
+                while(true){
+                    if(!t.isAlive()) {
+                        PlaceholderFragment.setAdapterCommands(commandAdapter);
+                        PlaceholderFragment.setAdapterPlaylist(songAdapter);
+                        //TODO: Put code here to get results from Houndify and Spotify
+                        //state.pushCommand(voiceMessage);
+                        state.setSongList(songs);
+                        commandAdapter.notifyDataSetChanged();
+                        songAdapter.notifyDataSetChanged();
+                        Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
+                        startService(intent1);
+                        mviewPager.setCurrentItem(2);
+                        mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
+                        for (int i = 1; i < songs.size(); i++) {
+                            mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+                        }
+                        //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
+                        TextView songName = findViewById(R.id.tv_song_playing);
+                        songName.setText(songs.get(0).getTitle());
+                        TextView artistName = findViewById(R.id.tv_artist_playing);
+                        artistName.setText(songs.get(0).getArtist());
+                        ImageView albumImage = findViewById(R.id.iv_album_cover);
+                        //TODO: Set image for album cover here
+                        break;
+                    }
+                }
             }
         });
 
@@ -612,7 +638,7 @@ public class MainActivity extends AppCompatActivity {
                 jsonObj = resultsArray.getJSONObject(0);
                 final String voiceMessag = jsonObj.getString("Transcription");
                 Log.d("OnReponse: ", voiceMessag);
-                new Thread(new Runnable() {
+                t = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         Log.d("newTHread: ", "running");
@@ -707,27 +733,6 @@ public class MainActivity extends AppCompatActivity {
                                             @Override
                                             public void run() {
                                                 String recommendations_json = spotifyApiRequest(voiceMessage, seeds.get(0), 10);
-                                                PlaceholderFragment.setAdapterCommands(commandAdapter);
-                                                PlaceholderFragment.setAdapterPlaylist(songAdapter);
-                                                //TODO: Put code here to get results from Houndify and Spotify
-                                                //state.pushCommand(voiceMessage);
-                                                state.setSongList(songs);
-                                                commandAdapter.notifyDataSetChanged();
-                                                songAdapter.notifyDataSetChanged();
-                                                Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
-                                                startService(intent1);
-                                                mviewPager.setCurrentItem(2);
-                                                mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
-                                                for(int i = 1; i<songs.size(); i++){
-                                                    mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
-                                                }
-                                                //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
-                                                TextView songName = findViewById(R.id.tv_song_playing);
-                                                songName.setText(songs.get(0).getTitle());
-                                                TextView artistName = findViewById(R.id.tv_artist_playing);
-                                                artistName.setText(songs.get(0).getArtist());
-                                                ImageView albumImage = findViewById(R.id.iv_album_cover);
-                                                //TODO: Set image for album cover here
 
                                                 //SpotifyWebAPIParser(spotifyApiRequest(voiceMessage, seeds.get(0), 10));
                                             }
@@ -748,7 +753,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                     }
-                }).start();
+                }, "SpotifyThread");
+                t.start();
                 //statusTextView.setText("Received Response");
             }
             catch(Exception e){
