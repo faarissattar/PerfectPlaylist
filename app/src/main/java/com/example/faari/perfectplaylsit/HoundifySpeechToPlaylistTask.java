@@ -32,8 +32,8 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
             if (textSearch == null) {
                 TextSearch.Builder builder = new TextSearch.Builder()
                         .setRequestInfo(requestInfo)
-                        .setClientId("Bu-exntOPXXobJkeWy7mLQ==")
-                        .setClientKey("zEEhEDttMVW5chVm-9JErBOUIlucENjyRT-AO3DPqY6mRCpw2znKerG5b202N5VCELSErvOiAyx2B35vCRnNWg==")
+                        .setClientId("aLd8-Vj7dfersTaCaXSOFA==")
+                        .setClientKey("Ju0nO0Wc71XcLozSIkfHxxioHv18cODzQOMdLXLwNE2CW4nInOIgpKp8sH77SiuB2xNrGqDMQ38_8biPKPbV0w==")
                         .setQuery(("Songs " + voiceMessag));
                 Log.d("before build", "coolio");
 
@@ -130,19 +130,24 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
 //                            }).start();
                         } catch (JSONException ex) {
                             ex.printStackTrace();
+                            textSearch.abort();
                         } catch (NullPointerException ex) {
                             ex.printStackTrace();
+                            textSearch.abort();
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();
+                        textSearch.abort();
                     }
                 } catch (com.hound.android.sdk.TextSearch.TextSearchException ts) {
                     Log.d("ts: ", ts.getMessage());
+                    textSearch.abort();
                 }
             }
         } catch (Exception e) {
             Log.d("Build failed: ", "fuu");
             e.printStackTrace();
+            textSearch.abort();
         }
         return null;
     }

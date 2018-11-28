@@ -122,8 +122,8 @@ public class MainActivity extends AppCompatActivity {
         }, 0);
 
         final Houndify houndify = Houndify.get(this);
-        houndify.setClientId("Vy_CyVmRNJoW0VLpWcmBGQ==");
-        houndify.setClientKey("2ATZbp6QpSGEoBDXGWSfC63vznJoJh9riR2oQaznDamJmdIW-us0wezYgz_J7ec_wS6M3X7sfTsjENxAcDl5og==");
+        houndify.setClientId("aLd8-Vj7dfersTaCaXSOFA==");
+        houndify.setClientKey("Ju0nO0Wc71XcLozSIkfHxxioHv18cODzQOMdLXLwNE2CW4nInOIgpKp8sH77SiuB2xNrGqDMQ38_8biPKPbV0w==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
 
         /***************
@@ -204,9 +204,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         if(state.getCommandList() == null) state.setCommandList(new ArrayList<Command>());
-        else commands = state.getCommandList();
+        else {
+            commands = state.getCommandList();
+            commandAdapter.addAll(commands);
+        }
         if(state.getSongList() == null) state.setSongList(new ArrayList<Song>());
-        else songs = state.getSongList();
+        else {
+            songs = state.getSongList();
+            songAdapter.addAll(songs);
+        }
     }
 
     public void setFirstSong(String command){
@@ -217,7 +223,6 @@ public class MainActivity extends AppCompatActivity {
         commandAdapter.addAll(commands);
         if(songs.size() != 0){
             state.pushCommand(new Command(command));
-            songAdapter.clear();
             songAdapter.addAll(songs);
             state.setSongList(songs);
             Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
