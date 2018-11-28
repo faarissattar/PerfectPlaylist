@@ -61,7 +61,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -224,16 +223,16 @@ public class MainActivity extends AppCompatActivity {
         PlaceholderFragment.setAdapterCommands(commandAdapter);
         PlaceholderFragment.setAdapterPlaylist(songAdapter);
         commands.add(0, new Command(command));
-        commandAdapter.notifyDataSetChanged();
+        commandAdapter.clear();
+        commandAdapter.addAll(commands);
         if(songs.size() != 0){
             state.pushCommand(new Command(command));
-            songAdapter.removeAll();
+            songAdapter.clear();
             songAdapter.addAll(songs);
             state.setSongList(songs);
             Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
             startService(intent1);
             mviewPager.setCurrentItem(2);
-
             mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
             for (int i = 1; i < songs.size(); i++) {
                 mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
@@ -634,7 +633,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
             mbuttonSearch.setClickable(true);
-            //mbuttonSearch.setBackgroundColor(getResources().getColor(R.color.colorAccent));
             mvoiceSearch = null;
             try {
                 JSONObject jsonOb = new JSONObject(rawResponse);
