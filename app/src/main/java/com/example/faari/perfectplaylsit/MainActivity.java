@@ -170,23 +170,16 @@ public class MainActivity extends AppCompatActivity {
 
                     //Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
                     mvoiceSearch.start();
+                    synchronized (mvoiceSearch){
+                        try{
+                            mvoiceSearch.wait();
+                        }catch (InterruptedException e){
+                            e.printStackTrace();
+                        }
+                    }
                 }
                 else {
                     mvoiceSearch.stopRecording();
-                }
-                while(true){
-                    if(t!=null) {
-                        t.start();
-                        break;
-                    }
-                }
-
-                synchronized (t){
-                    try{
-                        t.wait();
-                    }catch (InterruptedException e){
-                        e.printStackTrace();
-                    }
                 }
 
                 PlaceholderFragment.setAdapterCommands(commandAdapter);
@@ -763,6 +756,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }, "SpotifyThread");
+                t.start();
                 //statusTextView.setText("Received Response");
             }
             catch(Exception e){
