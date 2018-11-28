@@ -170,39 +170,37 @@ public class MainActivity extends AppCompatActivity {
 
                     //Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
                     mvoiceSearch.start();
-                    synchronized (mvoiceSearch){
-                        try{
-                            mvoiceSearch.wait();
-                        }catch (InterruptedException e){
-                            e.printStackTrace();
-                        }
-                    }
+                    state.setSongList(null);
                 }
                 else {
                     mvoiceSearch.stopRecording();
                 }
-
-                PlaceholderFragment.setAdapterCommands(commandAdapter);
-                PlaceholderFragment.setAdapterPlaylist(songAdapter);
-                //TODO: Put code here to get results from Houndify and Spotify
-                //state.pushCommand(voiceMessage);
-                state.setSongList(songs);
-                commandAdapter.notifyDataSetChanged();
-                songAdapter.notifyDataSetChanged();
-                Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
-                startService(intent1);
-                mviewPager.setCurrentItem(2);
-                mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
-                for (int i = 1; i < songs.size(); i++) {
-                    mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+                while(true) {
+                    if (state.getSongList() != null) {
+                        PlaceholderFragment.setAdapterCommands(commandAdapter);
+                        PlaceholderFragment.setAdapterPlaylist(songAdapter);
+                        //TODO: Put code here to get results from Houndify and Spotify
+                        //state.pushCommand(voiceMessage);
+                        state.setSongList(songs);
+                        commandAdapter.notifyDataSetChanged();
+                        songAdapter.notifyDataSetChanged();
+                        Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
+                        startService(intent1);
+                        mviewPager.setCurrentItem(2);
+                        mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
+                        for (int i = 1; i < songs.size(); i++) {
+                            mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+                        }
+                        //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
+                        TextView songName = findViewById(R.id.tv_song_playing);
+                        songName.setText(songs.get(0).getTitle());
+                        TextView artistName = findViewById(R.id.tv_artist_playing);
+                        artistName.setText(songs.get(0).getArtist());
+                        ImageView albumImage = findViewById(R.id.iv_album_cover);
+                        //TODO: Set image for album cover here
+                        break;
+                    }
                 }
-                //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
-                TextView songName = findViewById(R.id.tv_song_playing);
-                songName.setText(songs.get(0).getTitle());
-                TextView artistName = findViewById(R.id.tv_artist_playing);
-                artistName.setText(songs.get(0).getArtist());
-                ImageView albumImage = findViewById(R.id.iv_album_cover);
-                //TODO: Set image for album cover here
             }
         });
 
