@@ -78,7 +78,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String SPOTIFY_URL_TRACK = "https://api.spotify.com/v1/tracks/";
     private static String spotApiToken = "";
     private ArrayList<String> seeds = new ArrayList<>();
-    private static ArrayList<Song> songs = new ArrayList<>();
+    public static ArrayList<Song> songs = new ArrayList<>();
+    public static ArrayList<Command> commands = new ArrayList<>();
     private String voiceMessage = "";
     //	new instance of NLU
     private final NaturalLanguageUnderstanding botNlu = new NaturalLanguageUnderstanding("2017-02-27", IBM_USERNAME, IBM_PASSWORD);
@@ -106,15 +107,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         state = (CurrentState) getApplication();
-        if(state.getCommandList() == null) state.setCommandList(new ArrayList<Command>());
-        if(state.getSongList() == null) state.setSongList(new ArrayList<Song>());
+        Intent intent = new Intent(getApplicationContext(), GetListsDatabaseService.class);
+        startService(intent);
         mbuttonSearch = findViewById(R.id.fab_microphone);
         msectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mviewPager = findViewById(R.id.container);
         mviewPager.setAdapter(msectionsPagerAdapter);
-        songAdapter = new SongAdapter(getApplicationContext(), state.getSongList());
+        songAdapter = new SongAdapter(getApplicationContext(), songs);
         commandAdapter =
-                new ArrayAdapter<Command>(getApplicationContext(), android.R.layout.simple_list_item_1, state.getCommandList()) {
+                new ArrayAdapter<Command>(getApplicationContext(), android.R.layout.simple_list_item_1, commands) {
                     @NonNull
                     @Override
                     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -143,18 +144,90 @@ public class MainActivity extends AppCompatActivity {
 
         //builder.setScopes(new String[]{"streaming"});
         AuthenticationRequest request = builder.build();
-
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+
+        ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
+                .setRedirectUri(REDIRECT_URI)
+                .showAuthView(true)
+                .setPreferredImageSize(48)
+                .build();
+
+
+        SpotifyAppRemote.CONNECTOR.connect(this, connectionParams, new Connector.ConnectionListener() {
+            @Override
+            public void onConnected(SpotifyAppRemote spotifyAppRemote) {
+                mSpotifyAppRemote = spotifyAppRemote;
+                final View songBar = PlaceholderFragment.playlistView.findViewById(R.id.inc_song_bar);
+
+                // Initial check to sync pause and play button
+                mSpotifyAppRemote.getPlayerApi()
+                        .getPlayerState()
+                        .setResultCallback(new CallResult.ResultCallback<PlayerState>() {
+                            @Override
+                            public void onResult(PlayerState playerState) {
+                                ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
+                                if (playerState.isPaused) {
+                                    playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
+                                } else {
+                                    playPauseBtn.setImageResource(R.drawable.ic_pause);
+                                }
+                            }
+                        });
+
+                // Subscribe to player state to see when songs changes to update song bar
+                mSpotifyAppRemote.getPlayerApi()
+                        .subscribeToPlayerState()
+                        .setEventCallback(new Subscription.EventCallback<PlayerState>() {
+                            @Override
+                            public void onEvent(PlayerState playerState) {
+                                // Player state changed, song switched so update song bar
+
+                                final ImageView albumCover = songBar.findViewById(R.id.iv_album_cover);
+                                TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
+                                TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
+
+                                final Track track = playerState.track;
+                                if (track != null) {
+                                    // Update and Get the album cover
+                                    mSpotifyAppRemote.getImagesApi().getImage(track.imageUri)
+                                            .setResultCallback(new CallResult.ResultCallback<Bitmap>() {
+                                                @Override
+                                                public void onResult(Bitmap bitmap) {
+                                                    albumCover.setImageBitmap(bitmap);
+                                                }
+                                            });
+                                    // Update song and artist name
+                                    String songName = track.name;
+                                    String artistName = track.artist.name;
+                                    songPlaying.setText(songName);
+                                    artistPlaying.setText(artistName);
+                                }
+                            }
+                        });
+                Log.d("MainActivity", "Connected! Yay!");
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                Log.e("MainActivity", throwable.getMessage(), throwable);
+
+            }
+        });
+        if(state.getCommandList() == null) state.setCommandList(new ArrayList<Command>());
+        else commands = state.getCommandList();
+        if(state.getSongList() == null) state.setSongList(new ArrayList<Song>());
+        else songs = state.getSongList();
     }
 
-    public void setFirstSong(){
+    public void setFirstSong(String command){
         PlaceholderFragment.setAdapterCommands(commandAdapter);
         PlaceholderFragment.setAdapterPlaylist(songAdapter);
-        //TODO: Put code here to get results from Houndify and Spotify
-        //state.pushCommand(voiceMessage);
-        state.setSongList(songs);
+        commands.add(0, new Command(command));
         commandAdapter.notifyDataSetChanged();
-        songAdapter.notifyDataSetChanged();
+        state.pushCommand(new Command(command));
+        songAdapter.removeAll();
+        songAdapter.addAll(songs);
+        state.setSongList(songs);
         Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
         startService(intent1);
         mviewPager.setCurrentItem(2);
@@ -178,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
         mbuttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
+                Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
                 if (mvoiceSearch == null) {
                     //startVoiceSearch(view);
                     mvoiceSearch = new VoiceSearch.Builder()
@@ -188,80 +261,11 @@ public class MainActivity extends AppCompatActivity {
                             .setListener(voiceListener)
                             .setAudioSource(new SimpleAudioByteStreamSource())
                             .build();
-
-                    //Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
                     mvoiceSearch.start();
                 }
                 else {
                     mvoiceSearch.stopRecording();
                 }
-            }
-        });
-
-        ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
-                .setRedirectUri(REDIRECT_URI)
-                .showAuthView(true)
-                .setPreferredImageSize(48)
-                .build();
-
-        SpotifyAppRemote.CONNECTOR.connect(this, connectionParams, new Connector.ConnectionListener() {
-            @Override
-            public void onConnected(SpotifyAppRemote spotifyAppRemote) {
-                mSpotifyAppRemote = spotifyAppRemote;
-                final View songBar = PlaceholderFragment.playlistView.findViewById(R.id.inc_song_bar);
-
-                // Initial check to sync pause and play button
-                mSpotifyAppRemote.getPlayerApi()
-                                .getPlayerState()
-                                .setResultCallback(new CallResult.ResultCallback<PlayerState>() {
-                                    @Override
-                                    public void onResult(PlayerState playerState) {
-                                        ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
-                                        if (playerState.isPaused) {
-                                            playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
-                                        } else {
-                                            playPauseBtn.setImageResource(R.drawable.ic_pause);
-                                        }
-                                    }
-                                });
-
-                // Subscribe to player state to see when songs changes to update song bar
-                mSpotifyAppRemote.getPlayerApi()
-                                .subscribeToPlayerState()
-                                .setEventCallback(new Subscription.EventCallback<PlayerState>() {
-                                    @Override
-                                    public void onEvent(PlayerState playerState) {
-                                        // Player state changed, song switched so update song bar
-
-                                        final ImageView albumCover = songBar.findViewById(R.id.iv_album_cover);
-                                        TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
-                                        TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
-
-                                        final Track track = playerState.track;
-                                        if (track != null) {
-                                            // Update and Get the album cover
-                                            mSpotifyAppRemote.getImagesApi().getImage(track.imageUri)
-                                                    .setResultCallback(new CallResult.ResultCallback<Bitmap>() {
-                                                        @Override
-                                                        public void onResult(Bitmap bitmap) {
-                                                            albumCover.setImageBitmap(bitmap);
-                                                        }
-                                                    });
-                                            // Update song and artist name
-                                            String songName = track.name;
-                                            String artistName = track.artist.name;
-                                            songPlaying.setText(songName);
-                                            artistPlaying.setText(artistName);
-                                        }
-                                    }
-                                });
-                Log.d("MainActivity", "Connected! Yay!");
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                Log.e("MainActivity", throwable.getMessage(), throwable);
-
             }
         });
     }
@@ -400,19 +404,20 @@ public class MainActivity extends AppCompatActivity {
                     //TODO: Set album cover
                 }
             });
+            recentListView.setClickable(false);
 
-            recentListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            /*recentListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Command command = (Command)recentListView.getItemAtPosition(i);
-                    //TODO: Make this command run
+
                     CurrentState state = (CurrentState)getContext();
                     ArrayList<Command> commands = state.getCommandList();
-                    commands.add(0, command);
                     commands.remove(command);
+                    commands.add(0, command);
                     state.setCommandList(commands);
                 }
-            });
+            });*/
 
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
                 return recentView;
@@ -695,6 +700,7 @@ public class MainActivity extends AppCompatActivity {
             JSONArray tracksObj = raw.getJSONArray("tracks");
             Log.d("api parser method", "got here");
             JSONObject temp = null;
+            songs.clear();
             for (int i = 0; i < tracksObj.length(); i++) {
 
                 temp = tracksObj.getJSONObject(i);
@@ -725,8 +731,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("img: ", song.getImgUrl());
 //               song.setSongInfo(arr);
                 songs.add(song);
-                state.setSongList(songs);
+
             }
+            state.setSongList(songs);
 
         } catch (Exception e) {
             e.printStackTrace();

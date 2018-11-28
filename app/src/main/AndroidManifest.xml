@@ -30,16 +30,21 @@
                     android:scheme="http" />
             </intent-filter>
         </activity>
-
         <activity
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-        <service android:name=".UpdateDatabaseService"
-            android:exported="false"/>
+        <service
+            android:name=".UpdateDatabaseService"
+            android:exported="false" />
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
+
+        <service
+            android:name=".GetListsDatabaseService"
+            android:exported="false"></service>
     </application>
 
 </manifest>

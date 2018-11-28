@@ -151,6 +151,6 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
     protected void onPostExecute(Object o) {
         super.onPostExecute(o);
         Log.d("Post execute", "alright");
-        activity.setFirstSong();
+        activity.setFirstSong(voiceMessag);
     }
 }
