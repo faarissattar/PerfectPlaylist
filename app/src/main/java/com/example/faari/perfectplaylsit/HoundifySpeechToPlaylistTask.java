@@ -32,8 +32,8 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
             if (textSearch == null) {
                 TextSearch.Builder builder = new TextSearch.Builder()
                         .setRequestInfo(requestInfo)
-                        .setClientId("n06WnSgzJbML7AuGNJou3Q==")
-                        .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
+                        .setClientId("Vy_CyVmRNJoW0VLpWcmBGQ==")
+                        .setClientKey("2ATZbp6QpSGEoBDXGWSfC63vznJoJh9riR2oQaznDamJmdIW-us0wezYgz_J7ec_wS6M3X7sfTsjENxAcDl5og==")
                         .setQuery(("Songs " + voiceMessag));
                 Log.d("before build", "coolio");
 
@@ -151,6 +151,6 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
     protected void onPostExecute(Object o) {
         super.onPostExecute(o);
         Log.d("Post execute", "alright");
-        activity.setFirstSong();
+        activity.setFirstSong(voiceMessag);
     }
 }

@@ -3,6 +3,7 @@ package com.example.faari.perfectplaylsit;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public interface AppDAO {
     @Query("DELETE FROM song")
     void deleteAllSongs();
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(Song... songs);
 
     @Delete
@@ -42,7 +43,7 @@ public interface AppDAO {
     @Query("SELECT * FROM command WHERE id IN (:commandIds)")
     List<Command> loadAllByIdsCommand(long[] commandIds);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(Command... commands);
 
     @Delete
