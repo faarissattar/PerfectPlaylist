@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
     private static SpotifyAppRemote mSpotifyAppRemote;
     private VoiceSearch mvoiceSearch;
     private FloatingActionButton mbuttonSearch;
-    private TextSearch TextSearch = null;
     private String jsonString = "";
     ViewPager mviewPager;
     SectionsPagerAdapter msectionsPagerAdapter;
@@ -150,6 +149,30 @@ public class MainActivity extends AppCompatActivity {
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
     }
 
+    public void setFirstSong(){
+        PlaceholderFragment.setAdapterCommands(commandAdapter);
+        PlaceholderFragment.setAdapterPlaylist(songAdapter);
+        //TODO: Put code here to get results from Houndify and Spotify
+        //state.pushCommand(voiceMessage);
+        state.setSongList(songs);
+        commandAdapter.notifyDataSetChanged();
+        songAdapter.notifyDataSetChanged();
+        Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
+        startService(intent1);
+        mviewPager.setCurrentItem(2);
+        mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
+        for (int i = 1; i < songs.size(); i++) {
+            mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+        }
+        //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
+        TextView songName = findViewById(R.id.tv_song_playing);
+        songName.setText(songs.get(0).getTitle());
+        TextView artistName = findViewById(R.id.tv_artist_playing);
+        artistName.setText(songs.get(0).getArtist());
+        ImageView albumImage = findViewById(R.id.iv_album_cover);
+        //TODO: Set image for album cover here
+    }
+
     @Override
     protected void onStart(){
         super.onStart();
@@ -170,36 +193,9 @@ public class MainActivity extends AppCompatActivity {
 
                     //Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
                     mvoiceSearch.start();
-                    state.setSongList(null);
                 }
                 else {
                     mvoiceSearch.stopRecording();
-                }
-                while(true) {
-                    if (state.getSongList() != null) {
-                        PlaceholderFragment.setAdapterCommands(commandAdapter);
-                        PlaceholderFragment.setAdapterPlaylist(songAdapter);
-                        //TODO: Put code here to get results from Houndify and Spotify
-                        //state.pushCommand(voiceMessage);
-                        state.setSongList(songs);
-                        commandAdapter.notifyDataSetChanged();
-                        songAdapter.notifyDataSetChanged();
-                        Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
-                        startService(intent1);
-                        mviewPager.setCurrentItem(2);
-                        mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
-                        for (int i = 1; i < songs.size(); i++) {
-                            mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
-                        }
-                        //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
-                        TextView songName = findViewById(R.id.tv_song_playing);
-                        songName.setText(songs.get(0).getTitle());
-                        TextView artistName = findViewById(R.id.tv_artist_playing);
-                        artistName.setText(songs.get(0).getArtist());
-                        ImageView albumImage = findViewById(R.id.iv_album_cover);
-                        //TODO: Set image for album cover here
-                        break;
-                    }
                 }
             }
         });
