@@ -701,23 +701,28 @@ public class MainActivity extends AppCompatActivity {
                 Song song = new Song(Integer.parseInt(temp.getString("duration_ms")));
 
                 song.setTitle(temp.getString("name"));
-                Log.d("name: ", song.getTitle());
+
 
                 song.setKey(temp.getString("uri"));
-                Log.d("uri: ", song.getKey());
+
 
                 song.setSpotifyId(temp.getString("id"));
-                Log.d("id: ", temp.getString("id"));
+
 
                 song.setImgUrl(temp.getJSONObject("album").getJSONArray("images").getJSONObject(temp.getJSONObject("album").getJSONArray("images").length() - 1).getString("url"));
-                Log.d("img: ", song.getImgUrl());
+
 
                 song.setAlbum(temp.getJSONObject("album").getString("name"));
-                Log.d("name: ", song.getAlbum());
+
 
                 song.setArtist(temp.getJSONArray("artists").getJSONObject(0).getString("name"));
-                Log.d("name: ", song.getArtist());
 
+                Log.d("name: ", song.getTitle());
+                Log.d("name: ", song.getArtist());
+                Log.d("name: ", song.getAlbum());
+                Log.d("uri: ", song.getKey());
+                Log.d("id: ", temp.getString("id"));
+                Log.d("img: ", song.getImgUrl());
 //               song.setSongInfo(arr);
                 songs.add(song);
                 state.setSongList(songs);

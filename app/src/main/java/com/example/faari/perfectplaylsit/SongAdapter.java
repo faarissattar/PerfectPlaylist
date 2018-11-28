@@ -59,10 +59,14 @@ public class SongAdapter extends ArrayAdapter<Song> {
     }
 
     private String formatLength(int millis) {
+        String sec;
         int minutes = (millis / 1000) / 60;
         int seconds = (millis / 1000) % 60;
-
-        return minutes + ":" + seconds;
+        sec = ""+seconds;
+        if(seconds<10){
+            sec = ("0"+seconds);
+        }
+        return minutes + ":" + sec;
     }
 }
 
