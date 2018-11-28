@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onConnected(SpotifyAppRemote spotifyAppRemote) {
                 mSpotifyAppRemote = spotifyAppRemote;
-                final View songBar = PlaceholderFragment.getListViewPlaylist().findViewById(R.id.inc_song_bar);
+                final View songBar = PlaceholderFragment.playlistView.findViewById(R.id.inc_song_bar);
 
                 // Initial check to sync pause and play button
                 mSpotifyAppRemote.getPlayerApi()
@@ -621,7 +621,7 @@ public class MainActivity extends AppCompatActivity {
                             TextSearch.Builder builder = new TextSearch.Builder()
                                     .setRequestInfo(buildRequestInfo())
                                     .setClientId("n06WnSgzJbML7AuGNJou3Q==")
-                                    .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBzDs-qH9CoHNpdEG-oyDwVbmw==")
+                                    .setClientKey("ZzWH-lZ41uFCHq75opj9T5Zykux3aAWdDWLCCL8mPPzGR51Erds4gvnLT5v-TBz8Ds-qH9CoHNpdEG-oyDwVbmw==")
                                     .setQuery(("Songs " + voiceMessag));
                             TextSearch = builder.build();
                             try {
