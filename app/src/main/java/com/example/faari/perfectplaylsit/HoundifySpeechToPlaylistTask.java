@@ -129,7 +129,7 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
 //                                }
 //                            }).start();
                         } catch (JSONException ex) {
-                            ex.printStackTrace();
+                            textSearch.abort();
                         } catch (NullPointerException ex) {
                             ex.printStackTrace();
                         }

@@ -61,6 +61,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -223,25 +224,29 @@ public class MainActivity extends AppCompatActivity {
         PlaceholderFragment.setAdapterCommands(commandAdapter);
         PlaceholderFragment.setAdapterPlaylist(songAdapter);
         commands.add(0, new Command(command));
-        commandAdapter.notifyDataSetChanged();
-        state.pushCommand(new Command(command));
-        songAdapter.removeAll();
-        songAdapter.addAll(songs);
-        state.setSongList(songs);
-        Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
-        startService(intent1);
-        mviewPager.setCurrentItem(2);
-        mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
-        for (int i = 1; i < songs.size(); i++) {
-            mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+        commandAdapter.clear();
+        commandAdapter.addAll(commands);
+        if(songs.size() != 0){
+            state.pushCommand(new Command(command));
+            songAdapter.clear();
+            songAdapter.addAll(songs);
+            state.setSongList(songs);
+            Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
+            startService(intent1);
+            mviewPager.setCurrentItem(2);
+
+            mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
+            for (int i = 1; i < songs.size(); i++) {
+                mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+            }
+            //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
+            TextView songName = findViewById(R.id.tv_song_playing);
+            songName.setText(songs.get(0).getTitle());
+            TextView artistName = findViewById(R.id.tv_artist_playing);
+            artistName.setText(songs.get(0).getArtist());
+            ImageView albumImage = findViewById(R.id.iv_album_cover);
+            //TODO: Set image for album cover here
         }
-        //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
-        TextView songName = findViewById(R.id.tv_song_playing);
-        songName.setText(songs.get(0).getTitle());
-        TextView artistName = findViewById(R.id.tv_artist_playing);
-        artistName.setText(songs.get(0).getArtist());
-        ImageView albumImage = findViewById(R.id.iv_album_cover);
-        //TODO: Set image for album cover here
     }
 
     @Override
@@ -251,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
         mbuttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
+                //Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE);
                 if (mvoiceSearch == null) {
                     //startVoiceSearch(view);
                     mvoiceSearch = new VoiceSearch.Builder()
@@ -630,6 +635,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onResponse(String rawResponse, VoiceSearchInfo voiceSearchInfo) {
             mbuttonSearch.setClickable(true);
+            //mbuttonSearch.setBackgroundColor(getResources().getColor(R.color.colorAccent));
             mvoiceSearch = null;
             try {
                 JSONObject jsonOb = new JSONObject(rawResponse);
