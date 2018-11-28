@@ -372,10 +372,9 @@ public class MainActivity extends AppCompatActivity {
 //                    songPlaying.setText(song.getTitle());
 //                    artistPlaying.setText(song.getArtist());
                     mSpotifyAppRemote.getPlayerApi().play(song.getKey());
-                    // In on item click, not sure if need
-//                    for(int j = i+1; j<songs.size(); j++){
-//                        mSpotifyAppRemote.getPlayerApi().queue(songs.get(j).getKey());
-//                    }
+                    for(int j = i+1; j<songs.size(); j++){
+                        mSpotifyAppRemote.getPlayerApi().queue(songs.get(j).getKey());
+                    }
                     playPauseBtn.setImageResource(R.drawable.ic_pause);
                     //TODO: Set album cover
                 }
