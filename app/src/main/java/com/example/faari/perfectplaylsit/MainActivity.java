@@ -203,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
         ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
                 .setRedirectUri(REDIRECT_URI)
                 .showAuthView(true)
+                .setPreferredImageSize(48)
                 .build();
 
         SpotifyAppRemote.CONNECTOR.connect(this, connectionParams, new Connector.ConnectionListener() {
