@@ -8,14 +8,17 @@
 
     <TextView
         android:id="@+id/tv_song_name"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
         android:layout_marginStart="8dp"
         android:fontFamily="@font/roboto"
         android:textColor="@android:color/white"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:singleLine="true"
         app:layout_constraintBottom_toTopOf="@+id/tv_artist_album"
+        app:layout_constraintEnd_toStartOf="@+id/tv_length"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
@@ -23,13 +26,16 @@
 
     <TextView
         android:id="@+id/tv_artist_album"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
         android:fontFamily="@font/roboto_light"
         android:text="Artist Name \u2022 Album Name"
         android:textColor="@android:color/white"
         android:textSize="15sp"
+        android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/tv_length"
         app:layout_constraintStart_toStartOf="@+id/tv_song_name"
         app:layout_constraintTop_toBottomOf="@+id/tv_song_name"
         tools:text="Artist Name \u2022 Album Name" />
