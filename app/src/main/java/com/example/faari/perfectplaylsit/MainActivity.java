@@ -133,8 +133,8 @@ public class MainActivity extends AppCompatActivity {
         }, 0);
 
         final Houndify houndify = Houndify.get(this);
-        houndify.setClientId("Vy_CyVmRNJoW0VLpWcmBGQ==");
-        houndify.setClientKey("2ATZbp6QpSGEoBDXGWSfC63vznJoJh9riR2oQaznDamJmdIW-us0wezYgz_J7ec_wS6M3X7sfTsjENxAcDl5og==");
+        houndify.setClientId("Bu-exntOPXXobJkeWy7mLQ==");
+        houndify.setClientKey("zEEhEDttMVW5chVm-9JErBOUIlucENjyRT-AO3DPqY6mRCpw2znKerG5b202N5VCELSErvOiAyx2B35vCRnNWg==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
 
         /***************
@@ -184,8 +184,8 @@ public class MainActivity extends AppCompatActivity {
                                 // Player state changed, song switched so update song bar
 
                                 final ImageView albumCover = songBar.findViewById(R.id.iv_album_cover);
-                                TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
-                                TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
+                                final TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
+                                final TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
 
                                 final Track track = playerState.track;
                                 if (track != null) {
@@ -195,13 +195,13 @@ public class MainActivity extends AppCompatActivity {
                                                 @Override
                                                 public void onResult(Bitmap bitmap) {
                                                     albumCover.setImageBitmap(bitmap);
+                                                    // Update song and artist name
+                                                    String songName = track.name;
+                                                    String artistName = track.artist.name;
+                                                    songPlaying.setText(songName);
+                                                    artistPlaying.setText(artistName);
                                                 }
                                             });
-                                    // Update song and artist name
-                                    String songName = track.name;
-                                    String artistName = track.artist.name;
-                                    songPlaying.setText(songName);
-                                    artistPlaying.setText(artistName);
                                 }
                             }
                         });
@@ -260,8 +260,8 @@ public class MainActivity extends AppCompatActivity {
                     //startVoiceSearch(view);
                     mvoiceSearch = new VoiceSearch.Builder()
                             .setRequestInfo(buildRequestInfo())
-                            .setClientId("Vy_CyVmRNJoW0VLpWcmBGQ==")
-                            .setClientKey("2ATZbp6QpSGEoBDXGWSfC63vznJoJh9riR2oQaznDamJmdIW-us0wezYgz_J7ec_wS6M3X7sfTsjENxAcDl5og==")
+                            .setClientId("Bu-exntOPXXobJkeWy7mLQ==")
+                            .setClientKey("zEEhEDttMVW5chVm-9JErBOUIlucENjyRT-AO3DPqY6mRCpw2znKerG5b202N5VCELSErvOiAyx2B35vCRnNWg==")
                             .setListener(voiceListener)
                             .setAudioSource(new SimpleAudioByteStreamSource())
                             .build();
