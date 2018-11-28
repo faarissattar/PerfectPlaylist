@@ -25,7 +25,6 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
 
     @Override
     protected Object doInBackground(Object[] objects) {
-        TextSearch TextSearch = null;
         try {
             JSONObject jsonObj = new JSONObject(rawResponse);
             jsonObj = jsonObj.getJSONObject("Disambiguation");
