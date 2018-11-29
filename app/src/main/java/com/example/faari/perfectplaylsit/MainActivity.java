@@ -232,9 +232,9 @@ public class MainActivity extends AppCompatActivity {
             startService(intent1);
             mviewPager.setCurrentItem(2);
             mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
-//            for (int i = 1; i < songs.size(); i++) {
-//                mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
-//            }
+            for (int i = 1; i < songs.size(); i++) {
+                mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+            }
             //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
             TextView songName = findViewById(R.id.tv_song_playing);
             songName.setText(songs.get(0).getTitle());
