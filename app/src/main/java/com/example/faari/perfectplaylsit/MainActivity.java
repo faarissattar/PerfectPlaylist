@@ -219,8 +219,7 @@ public class MainActivity extends AppCompatActivity {
         PlaceholderFragment.setAdapterCommands(commandAdapter);
         PlaceholderFragment.setAdapterPlaylist(songAdapter);
         commands.add(0, new Command(command));
-        commandAdapter.clear();
-        commandAdapter.addAll(commands);
+        commandAdapter.notifyDataSetChanged();
         if(songs.size() != 0){
             state.pushCommand(new Command(command));
             songAdapter.addAll(songs);
@@ -229,9 +228,9 @@ public class MainActivity extends AppCompatActivity {
             startService(intent1);
             mviewPager.setCurrentItem(2);
             mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
-            for (int i = 1; i < songs.size(); i++) {
-                mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
-            }
+//            for (int i = 1; i < songs.size(); i++) {
+//                mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+//            }
             //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
             TextView songName = findViewById(R.id.tv_song_playing);
             songName.setText(songs.get(0).getTitle());
@@ -239,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
             artistName.setText(songs.get(0).getArtist());
             ImageView albumImage = findViewById(R.id.iv_album_cover);
             //TODO: Set image for album cover here
+            songAdapter.setSelectedIndex(0);
         }
     }
 
@@ -346,6 +346,7 @@ public class MainActivity extends AppCompatActivity {
             recentView = inflater.inflate(R.layout.fragment_recent, container, false);
             playlistView = inflater.inflate(R.layout.fragment_playlist, container, false);
             getListViewCommands();
+            recentListView.setAdapter(commandAdapter);
             getListViewPlaylist();
 
             final View songBar = playlistView.findViewById(R.id.inc_song_bar);
@@ -388,9 +389,9 @@ public class MainActivity extends AppCompatActivity {
 //                    songPlaying.setText(song.getTitle());
 //                    artistPlaying.setText(song.getArtist());
                     mSpotifyAppRemote.getPlayerApi().play(song.getKey());
-                    for(int j = i+1; j<songs.size(); j++){
-                        mSpotifyAppRemote.getPlayerApi().queue(songs.get(j).getKey());
-                    }
+//                    for(int j = i+1; j<songs.size(); j++){
+//                        mSpotifyAppRemote.getPlayerApi().queue(songs.get(j).getKey());
+//                    }
                     playPauseBtn.setImageResource(R.drawable.ic_pause);
                     //TODO: Set album cover
                 }
