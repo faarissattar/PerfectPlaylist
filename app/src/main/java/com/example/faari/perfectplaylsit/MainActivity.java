@@ -1,7 +1,10 @@
 package com.example.faari.perfectplaylsit;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -12,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -92,6 +96,11 @@ public class MainActivity extends AppCompatActivity {
     CurrentState state;
     Thread t;
 
+    public static final String BROADCAST_ACTION =
+            "com.example.android.threadsample.BROADCAST";
+    public static final String EXTENDED_DATA_STATUS =
+            "com.example.android.threadsample.STATUS";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
         state = (CurrentState) getApplication();
         Intent intent = new Intent(getApplicationContext(), GetListsDatabaseService.class);
         startService(intent);
+        IntentFilter statusIntentFilter = new IntentFilter(BROADCAST_ACTION);
+        GetListsReceiver responseReceiver = new GetListsReceiver();
+// Registers the MyResponseReceiver and its intent filters
+        LocalBroadcastManager.getInstance(this).registerReceiver(responseReceiver, statusIntentFilter );
         mbuttonSearch = findViewById(R.id.fab_microphone);
         msectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mviewPager = findViewById(R.id.container);
@@ -203,16 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        if(state.getCommandList() == null) state.setCommandList(new ArrayList<Command>());
-        else {
-            commands = state.getCommandList();
-            commandAdapter.addAll(commands);
-        }
-        if(state.getSongList() == null) state.setSongList(new ArrayList<Song>());
-        else {
-            songs = state.getSongList();
-            songAdapter.addAll(songs);
-        }
+
     }
 
     public void setFirstSong(String command){
@@ -249,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
         mbuttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                songAdapter.clear();
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE_HOUND);
             }
         });
@@ -626,6 +631,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("api parser method", "got here");
             JSONObject temp = null;
             songs.clear();
+            //songAdapter.notifyDataSetChanged();
             for (int i = 0; i < tracksObj.length(); i++) {
 
                 temp = tracksObj.getJSONObject(i);
@@ -673,4 +679,22 @@ public class MainActivity extends AppCompatActivity {
             Log.d(tag, content);
         }
     }
+    private class GetListsReceiver extends BroadcastReceiver {
+        // Called when the BroadcastReceiver gets an Intent it's registered to receive
+    @Override
+        public void onReceive(Context context, Intent intent) {
+            if(state.getCommandList() == null) state.setCommandList(new ArrayList<Command>());
+            else {
+                commands = state.getCommandList();
+                commandAdapter.addAll(commands);
+            }
+            if(state.getSongList() == null) state.setSongList(new ArrayList<Song>());
+            else {
+                songs = state.getSongList();
+                songAdapter.addAll(songs);
+            }
+        }
+    }
 }
+
+
