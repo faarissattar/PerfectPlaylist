@@ -32,8 +32,8 @@ class HoundifySpeechToPlaylistTask extends AsyncTask {
             if (textSearch == null) {
                 TextSearch.Builder builder = new TextSearch.Builder()
                         .setRequestInfo(requestInfo)
-                        .setClientId("aLd8-Vj7dfersTaCaXSOFA==")
-                        .setClientKey("Ju0nO0Wc71XcLozSIkfHxxioHv18cODzQOMdLXLwNE2CW4nInOIgpKp8sH77SiuB2xNrGqDMQ38_8biPKPbV0w==")
+                        .setClientId("wHvkIdoP4a5ZnNsUe0ltcQ==")
+                        .setClientKey("1Yssx3TwbFfnhc3YXRKOIKZmDWXsQ3bsYrJJjD_62NdHv9RarPBEJ9-KQKJca1m8l4pCfqw6_YLueOP7hSxk0A==")
                         .setQuery(("Songs " + voiceMessag));
                 Log.d("before build", "coolio");
 

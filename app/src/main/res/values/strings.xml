@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PerfectPlaylist</string>
+    <string name="app_name">Perfect Playlist</string>
     <string name="button_replay">replay</string>
     <string name="button_pause">pause</string>
     <string name="button_skip">skip</string>

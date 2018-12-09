@@ -1,10 +1,7 @@
 package com.example.faari.perfectplaylsit;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -15,7 +12,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -95,11 +91,8 @@ public class MainActivity extends AppCompatActivity {
     static ArrayAdapter<Command> commandAdapter;
     CurrentState state;
     Thread t;
-
-    public static final String BROADCAST_ACTION =
-            "com.example.android.threadsample.BROADCAST";
-    public static final String EXTENDED_DATA_STATUS =
-            "com.example.android.threadsample.STATUS";
+    static int songIndex;
+    static boolean buttonPressed = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,10 +101,6 @@ public class MainActivity extends AppCompatActivity {
         state = (CurrentState) getApplication();
         Intent intent = new Intent(getApplicationContext(), GetListsDatabaseService.class);
         startService(intent);
-        IntentFilter statusIntentFilter = new IntentFilter(BROADCAST_ACTION);
-        GetListsReceiver responseReceiver = new GetListsReceiver();
-// Registers the MyResponseReceiver and its intent filters
-        LocalBroadcastManager.getInstance(this).registerReceiver(responseReceiver, statusIntentFilter );
         mbuttonSearch = findViewById(R.id.fab_microphone);
         msectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mviewPager = findViewById(R.id.container);
@@ -135,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
         }, 0);
 
         final Houndify houndify = Houndify.get(this);
-        houndify.setClientId("aLd8-Vj7dfersTaCaXSOFA==");
-        houndify.setClientKey("Ju0nO0Wc71XcLozSIkfHxxioHv18cODzQOMdLXLwNE2CW4nInOIgpKp8sH77SiuB2xNrGqDMQ38_8biPKPbV0w==");
+        houndify.setClientId("wHvkIdoP4a5ZnNsUe0ltcQ==");
+        houndify.setClientKey("1Yssx3TwbFfnhc3YXRKOIKZmDWXsQ3bsYrJJjD_62NdHv9RarPBEJ9-KQKJca1m8l4pCfqw6_YLueOP7hSxk0A==");
         houndify.setRequestInfoFactory(new DefaultRequestInfoFactory(this));
 
         /***************
@@ -149,12 +138,50 @@ public class MainActivity extends AppCompatActivity {
         AuthenticationRequest request = builder.build();
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE_SPOT, request);
 
+        if(state.getCommandList() == null) state.setCommandList(new ArrayList<Command>());
+        else {
+            commands = state.getCommandList();
+            commandAdapter.addAll(commands);
+        }
+        if(state.getSongList() == null) state.setSongList(new ArrayList<Song>());
+        else {
+            songs = state.getSongList();
+            songAdapter.addAll(songs);
+        }
+    }
+
+    public void setFirstSong(String command){
+        PlaceholderFragment.setAdapterCommands(commandAdapter);
+        PlaceholderFragment.setAdapterPlaylist(songAdapter);
+        commands.add(0, new Command(command));
+        commandAdapter.notifyDataSetChanged();
+        if(songs.size() != 0){
+            state.pushCommand(new Command(command));
+            songAdapter.addAll(songs);
+            state.setSongList(songs);
+            Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
+            startService(intent1);
+            mviewPager.setCurrentItem(2);
+            mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
+            View songBar = PlaceholderFragment.playlistView.findViewById(R.id.inc_song_bar);
+            ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
+            playPauseBtn.setImageResource(R.drawable.ic_pause);
+            songAdapter.setSelectedIndex(0);
+//            for (int i = 1; i < songs.size(); i++) {
+//                mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
+//            }
+        }
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+
         ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
                 .setRedirectUri(REDIRECT_URI)
                 .showAuthView(true)
                 .setPreferredImageSize(48)
                 .build();
-
 
         SpotifyAppRemote.CONNECTOR.connect(this, connectionParams, new Connector.ConnectionListener() {
             @Override
@@ -184,7 +211,17 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onEvent(PlayerState playerState) {
                                 // Player state changed, song switched so update song bar
+                                Log.d("onEvent: ", "PlayerState change occurred");
 
+                                if (playerState.isPaused) {
+                                    if (buttonPressed) {
+                                        buttonPressed = false;
+                                    } else {
+                                        songIndex = (songIndex < songs.size() - 1) ? (songIndex + 1) : 0;
+                                        mSpotifyAppRemote.getPlayerApi().queue(songs.get(songIndex).getKey());
+                                        buttonPressed = true;
+                                    }
+                                }
                                 final ImageView albumCover = songBar.findViewById(R.id.iv_album_cover);
                                 final TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
                                 final TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
@@ -217,43 +254,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    }
-
-    public void setFirstSong(String command){
-        PlaceholderFragment.setAdapterCommands(commandAdapter);
-        PlaceholderFragment.setAdapterPlaylist(songAdapter);
-        commands.add(0, new Command(command));
-        commandAdapter.notifyDataSetChanged();
-        if(songs.size() != 0){
-            state.pushCommand(new Command(command));
-            songAdapter.addAll(songs);
-            state.setSongList(songs);
-            Intent intent1 = new Intent(getApplicationContext(), UpdateDatabaseService.class);
-            startService(intent1);
-            mviewPager.setCurrentItem(2);
-            mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
-            for (int i = 1; i < songs.size(); i++) {
-                mSpotifyAppRemote.getPlayerApi().queue(songs.get(i).getKey());
-            }
-            //TODO: Put info from first item in list to the Now Playing View (CHECK IF THIS IS RIGHT)
-            TextView songName = findViewById(R.id.tv_song_playing);
-            songName.setText(songs.get(0).getTitle());
-            TextView artistName = findViewById(R.id.tv_artist_playing);
-            artistName.setText(songs.get(0).getArtist());
-            ImageView albumImage = findViewById(R.id.iv_album_cover);
-            //TODO: Set image for album cover here
-            songAdapter.setSelectedIndex(0);
-        }
-    }
-
-    @Override
-    protected void onStart(){
-        super.onStart();
-
         mbuttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                songAdapter.clear();
+                mSpotifyAppRemote.getPlayerApi().pause();
                 Houndify.get(MainActivity.this).voiceSearch(MainActivity.this, REQUEST_CODE_HOUND);
             }
         });
@@ -359,14 +363,18 @@ public class MainActivity extends AppCompatActivity {
             previousBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    mSpotifyAppRemote.getPlayerApi().skipPrevious();
+                    songIndex = (songIndex > 0) ? (songIndex - 1) : (songs.size() - 1);
+                    mSpotifyAppRemote.getPlayerApi().play(songs.get(songIndex).getKey());
+                    songAdapter.setSelectedIndex(songIndex);
                 }
             });
             final ImageView nextBtn = songBar.findViewById(R.id.iv_next);
             nextBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    mSpotifyAppRemote.getPlayerApi().skipNext();
+                    songIndex = (songIndex < songs.size() - 1) ? (songIndex + 1) : 0;
+                    mSpotifyAppRemote.getPlayerApi().play(songs.get(songIndex).getKey());
+                    songAdapter.setSelectedIndex(songIndex);
                 }
             });
             final ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
@@ -377,6 +385,7 @@ public class MainActivity extends AppCompatActivity {
                         mSpotifyAppRemote.getPlayerApi().resume();
                         playPauseBtn.setImageResource(R.drawable.ic_pause);
                     } else {
+                        buttonPressed = true;
                         mSpotifyAppRemote.getPlayerApi().pause();
                         playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
                     }
@@ -394,11 +403,10 @@ public class MainActivity extends AppCompatActivity {
 //                    songPlaying.setText(song.getTitle());
 //                    artistPlaying.setText(song.getArtist());
                     mSpotifyAppRemote.getPlayerApi().play(song.getKey());
+                    songIndex = i;
 //                    for(int j = i+1; j<songs.size(); j++){
 //                        mSpotifyAppRemote.getPlayerApi().queue(songs.get(j).getKey());
 //                    }
-                    playPauseBtn.setImageResource(R.drawable.ic_pause);
-                    //TODO: Set album cover
                 }
             });
             recentListView.setClickable(false);
@@ -632,7 +640,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d("api parser method", "got here");
             JSONObject temp = null;
             songs.clear();
-            //songAdapter.notifyDataSetChanged();
             for (int i = 0; i < tracksObj.length(); i++) {
 
                 temp = tracksObj.getJSONObject(i);
@@ -680,22 +687,4 @@ public class MainActivity extends AppCompatActivity {
             Log.d(tag, content);
         }
     }
-    private class GetListsReceiver extends BroadcastReceiver {
-        // Called when the BroadcastReceiver gets an Intent it's registered to receive
-    @Override
-        public void onReceive(Context context, Intent intent) {
-            if(state.getCommandList() == null) state.setCommandList(new ArrayList<Command>());
-            else {
-                commands = state.getCommandList();
-                commandAdapter.addAll(commands);
-            }
-            if(state.getSongList() == null) state.setSongList(new ArrayList<Song>());
-            else {
-                songs = state.getSongList();
-                songAdapter.addAll(songs);
-            }
-        }
-    }
 }
-
-
