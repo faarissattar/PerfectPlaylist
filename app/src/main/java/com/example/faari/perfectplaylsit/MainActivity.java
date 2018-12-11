@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +17,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -42,6 +45,7 @@ import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.client.CallResult;
 import com.spotify.protocol.client.Subscription;
+import com.spotify.protocol.types.Empty;
 import com.spotify.protocol.types.PlayerState;
 import com.spotify.protocol.types.Track;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
@@ -92,6 +96,10 @@ public class MainActivity extends AppCompatActivity {
     CurrentState state;
     Thread t;
     static int songIndex;
+    static String currentTrack;
+    boolean isPlaying = true;
+    boolean activityActive;
+    boolean backgroundPlay = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +156,8 @@ public class MainActivity extends AppCompatActivity {
             songs = state.getSongList();
             songAdapter.addAll(songs);
         }
+
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     public void setFirstSong(String command){
@@ -161,14 +171,16 @@ public class MainActivity extends AppCompatActivity {
             startService(intent1);
             mviewPager.setCurrentItem(2);
             songIndex = 0;
-            songAdapter.setSelectedIndex(0);
+            currentTrack = songs.get(0).getKey();
             mSpotifyAppRemote.getPlayerApi().play(songs.get(0).getKey());
+            isPlaying = true;
         }
     }
 
     @Override
     protected void onStart(){
         super.onStart();
+        activityActive = true;
 
         ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
                 .setRedirectUri(REDIRECT_URI)
@@ -182,17 +194,21 @@ public class MainActivity extends AppCompatActivity {
                 mSpotifyAppRemote = spotifyAppRemote;
                 final View songBar = PlaceholderFragment.playlistView.findViewById(R.id.inc_song_bar);
 
-                // Initial check to sync pause and play button
+                // Initial check if external song is playing
                 mSpotifyAppRemote.getPlayerApi()
                         .getPlayerState()
                         .setResultCallback(new CallResult.ResultCallback<PlayerState>() {
                             @Override
                             public void onResult(PlayerState playerState) {
-                                ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
-                                if (playerState.isPaused) {
-                                    playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
-                                } else {
-                                    playPauseBtn.setImageResource(R.drawable.ic_pause);
+                                boolean trackInList = false;
+                                for (Song song : songs) {
+                                    if (song.getKey().equals(playerState.track.uri)) {
+                                        trackInList = true;
+                                        break;
+                                    }
+                                }
+                                if (!trackInList) {
+                                    songIndex = -1;
                                 }
                             }
                         });
@@ -207,42 +223,47 @@ public class MainActivity extends AppCompatActivity {
                                 final ImageView albumCover = songBar.findViewById(R.id.iv_album_cover);
                                 final TextView songPlaying = songBar.findViewById(R.id.tv_song_playing);
                                 final TextView artistPlaying = songBar.findViewById(R.id.tv_artist_playing);
-
                                 final Track track = playerState.track;
-                                if (track != null) {
-                                    // Check if external song is playing
-                                    boolean trackInList = false;
-                                    for (Song song : songs) {
-                                        if (song.getKey().equals(track.uri)) {
-                                            trackInList = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!trackInList) {
-                                        songAdapter.setSelectedIndex(-1);
-                                    }
 
-                                    // Update and Get the album cover
+                                // Autoplay only when background play enabled or app is open
+                                if (backgroundPlay || activityActive) {
+                                    if (songs.size() > 0 && songIndex != -1 && isPlaying && !track.uri.equals(currentTrack)) {
+                                        songIndex = (songIndex < songs.size() - 1) ? (songIndex + 1) : 0;
+                                        currentTrack = songs.get(songIndex).getKey();
+                                        songAdapter.setSelectedIndex(songIndex);
+                                        mSpotifyAppRemote.getPlayerApi().play(currentTrack)
+                                                .setResultCallback(new CallResult.ResultCallback<Empty>() {
+                                                    @Override
+                                                    public void onResult(Empty empty) {
+                                                        isPlaying = true;
+                                                    }
+                                                });
+                                        isPlaying = false;
+                                    }
+                                }
+
+                                if (isPlaying && activityActive) {
+                                    // Update details and get the album cover
                                     mSpotifyAppRemote.getImagesApi().getImage(track.imageUri)
                                             .setResultCallback(new CallResult.ResultCallback<Bitmap>() {
                                                 @Override
                                                 public void onResult(Bitmap bitmap) {
+                                                    songAdapter.setSelectedIndex(songIndex);
                                                     albumCover.setImageBitmap(bitmap);
-                                                    // Update song and artist name
                                                     String songName = track.name;
                                                     String artistName = track.artist.name;
                                                     songPlaying.setText(songName);
                                                     artistPlaying.setText(artistName);
                                                 }
                                             });
-                                }
 
-                                // Sync play/pause button
-                                ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
-                                if (playerState.isPaused) {
-                                    playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
-                                } else {
-                                    playPauseBtn.setImageResource(R.drawable.ic_pause);
+                                    // Sync play/pause button
+                                    ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
+                                    if (playerState.isPaused) {
+                                        playPauseBtn.setImageResource(R.drawable.ic_play_arrow);
+                                    } else {
+                                        playPauseBtn.setImageResource(R.drawable.ic_pause);
+                                    }
                                 }
                             }
                         });
@@ -324,6 +345,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop(){
         super.onStop();
+        activityActive = false;
+        if (!backgroundPlay) {
+            SpotifyAppRemote.CONNECTOR.disconnect(mSpotifyAppRemote);
+        }
     }
 
     @Override
@@ -369,18 +394,26 @@ public class MainActivity extends AppCompatActivity {
             previousBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    songIndex = (songIndex > 0) ? (songIndex - 1) : (songs.size() - 1);
-                    mSpotifyAppRemote.getPlayerApi().play(songs.get(songIndex).getKey());
-                    songAdapter.setSelectedIndex(songIndex);
+                    if (songIndex != -1) {
+                        songIndex = (songIndex > 0) ? (songIndex - 1) : (songs.size() - 1);
+                        currentTrack = songs.get(songIndex).getKey();
+                        mSpotifyAppRemote.getPlayerApi().play(songs.get(songIndex).getKey());
+                    } else {
+                        mSpotifyAppRemote.getPlayerApi().skipPrevious();
+                    }
                 }
             });
             final ImageView nextBtn = songBar.findViewById(R.id.iv_next);
             nextBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    songIndex = (songIndex < songs.size() - 1) ? (songIndex + 1) : 0;
-                    mSpotifyAppRemote.getPlayerApi().play(songs.get(songIndex).getKey());
-                    songAdapter.setSelectedIndex(songIndex);
+                    if (songIndex != -1) {
+                        songIndex = (songIndex < songs.size() - 1) ? (songIndex + 1) : 0;
+                        currentTrack = songs.get(songIndex).getKey();
+                        mSpotifyAppRemote.getPlayerApi().play(songs.get(songIndex).getKey());
+                    } else {
+                        mSpotifyAppRemote.getPlayerApi().skipNext();
+                    }
                 }
             });
             final ImageView playPauseBtn = songBar.findViewById(R.id.iv_play_pause);
@@ -398,9 +431,9 @@ public class MainActivity extends AppCompatActivity {
             playlistListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    mSpotifyAppRemote.getPlayerApi().play(songs.get(i).getKey());
-                    songAdapter.setSelectedIndex(i);
                     songIndex = i;
+                    currentTrack = songs.get(songIndex).getKey();
+                    mSpotifyAppRemote.getPlayerApi().play(songs.get(songIndex).getKey());
                 }
             });
             recentListView.setClickable(false);
@@ -514,7 +547,6 @@ public class MainActivity extends AppCompatActivity {
             api_get.setRequestProperty("Accept", "application/json");
             api_get.setRequestProperty("Content-Type", "application/json");
             api_get.setRequestProperty("Authorization", ("Bearer "+spotApiToken));
-
 
             int responseCode = api_get.getResponseCode();
             Log.d("sending","\nSending 'GET' request to URL : " + url);
@@ -677,5 +709,26 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.d(tag, content);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.background_play) {
+            if (item.isChecked()) {
+                item.setChecked(false);
+                backgroundPlay = false;
+            } else {
+                item.setChecked(true);
+                backgroundPlay = true;
+            }
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
