@@ -26,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.hound.android.fd.DefaultRequestInfoFactory;
 import com.hound.android.fd.HoundSearchResult;
@@ -433,20 +434,22 @@ public class MainActivity extends AppCompatActivity {
                     mSpotifyAppRemote.getPlayerApi().play(songs.get(songIndex).getKey());
                 }
             });
-            recentListView.setClickable(false);
+            // recentListView.setClickable(false);
 
-            /*recentListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            recentListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Command command = (Command)recentListView.getItemAtPosition(i);
-
-                    CurrentState state = (CurrentState)getContext();
-                    ArrayList<Command> commands = state.getCommandList();
-                    commands.remove(command);
-                    commands.add(0, command);
-                    state.setCommandList(commands);
+                    Toast.makeText(getContext(), "Perform command: " + adapterView.getItemAtPosition(i),
+                            Toast.LENGTH_SHORT).show();
+//                    Command command = (Command)recentListView.getItemAtPosition(i);
+//
+//                    CurrentState state = (CurrentState)getContext();
+//                    ArrayList<Command> commands = state.getCommandList();
+//                    commands.remove(command);
+//                    commands.add(0, command);
+//                    state.setCommandList(commands);
                 }
-            });*/
+            });
 
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1){
                 return recentView;
