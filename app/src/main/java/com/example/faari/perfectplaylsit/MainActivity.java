@@ -346,9 +346,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop(){
         super.onStop();
         activityActive = false;
-        if (!backgroundPlay) {
-            SpotifyAppRemote.CONNECTOR.disconnect(mSpotifyAppRemote);
-        }
     }
 
     @Override

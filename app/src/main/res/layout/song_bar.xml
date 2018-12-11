@@ -31,6 +31,7 @@
         android:textColor="@android:color/white"
         android:textSize="15sp"
         app:fontFamily="@font/roboto_light"
+        android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/tv_song_playing"
         app:layout_constraintStart_toStartOf="@+id/tv_song_playing"
